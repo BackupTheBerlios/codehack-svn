@@ -27,7 +27,10 @@
       </p>
 
       <h1>Web Client</h1>
-      <p>Coming soon ...</p>
+      <p>
+        <h2>7. Team: HTML screenshot</h2>
+        <img src="images/sshots/web-team.png" /> 
+      </p>
  </div>
 
 <!--#include virtual="footer.inc" --> 
