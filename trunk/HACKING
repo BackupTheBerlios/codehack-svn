@@ -33,6 +33,10 @@ And not to say, accounts can only be created by 'admin'
 Other than this just look into the source.  If you care, the prime 
 methodology is the OpenSource style (which resembles XP to some extent)
 
+SVN
+---
+Online: http://svn.berlios.de/viewcvs/codehack/trunk
+Checking out: svn checkout svn://svn.berlios.de/codehack
 
 [1] compilation/execution are automated - server will take care of that
 
