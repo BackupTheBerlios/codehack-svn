@@ -89,6 +89,7 @@ class DBProxy(object):
             #'results': self._rid,
             #'problems': self._pid,
         }
+        self.conn = None
     
     # The following _TABLE_* are template methods
     # For each such method (_TABLE_get for eg), methods like

@@ -56,13 +56,16 @@ class GWidget(object):
         """
         self._gladexml = glade.XML(self.GLADE_FILE, self.TOPLEVEL_WIDGET)
         self._widget = self.gladexml.get_widget(self.TOPLEVEL_WIDGET)
-        if hasattr(self, 'on_quit'):
-            self._widget.connect('delete-event', self.on_quit)
+        self._widget.connect('delete-event', self.on_quit)
         self._widgets_cache = {}        # Widgets are stored in cache for
                                         #  quicker future retrieval
         if autoconnect_now:
             self.autoconnect_signals()
-            
+    
+    def on_quit(self, *args):
+        self.widget.hide()
+        self.widget.destroy()
+    
     def autoconnect_signals(self):
         autoconnect_signals_in_class(self._gladexml.get_widget, self)
         

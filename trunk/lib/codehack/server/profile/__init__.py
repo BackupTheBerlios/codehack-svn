@@ -204,7 +204,7 @@ class AbstractContestProfile(object):
                     # within the same second
                     # In final return, we return the `id`
                     pr.sort()
-                    pr = [(prb,lang,ts,res) for id,prb,lang,ts,res in pr]
+                    pr = [(prb,lang,ts,res) for id1,prb,lang,ts,res in pr]
                 sorted.append(pr)
             return sorted
         df = self.contest.dbproxy.submissions_get_ex(

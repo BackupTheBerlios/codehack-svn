@@ -33,7 +33,7 @@ sh_cmd = '/bin/sh'
 sh_cmd_args = ['/bin/sh', '-c']
 
 if __name__ != '__main__':
-    raise RuntimeError, 'This script cannot be imported'
+    print 'WARNING: This script cannot be imported'
 
 
 def usage():

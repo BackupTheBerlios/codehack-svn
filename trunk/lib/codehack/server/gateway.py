@@ -18,8 +18,11 @@
 
 import time
 
-from twisted.cred import checkers, portal, error, credentials
 from twisted.internet import reactor, defer
+from twisted.cred import checkers
+from twisted.cred import portal
+from twisted.cred import error
+from twisted.cred import credentials
 from twisted.spread import pb
 from twisted.python import failure
 
@@ -34,11 +37,6 @@ class CodehackRealm:
     __implements__ = portal.IRealm
     
     def __init__(self, contest):
-        """
-        @param contest: The contest object.
-        """
-        # Currently logged in avatars
-        self.loggedin = contest.avatars
         self.contest = contest
         
     # Authorizes the avatar
@@ -46,41 +44,44 @@ class CodehackRealm:
         log.debug('LOGIN: ' + avatarId + ' Mind? ' + str(mind is not None))
         if pb.IPerspective not in interfaces:
             raise NotImplementedError
+
         # Already logged in? then return the created Avatar.
         # TODO: better solution is to volunteerily logout the old avatar
-        if avatarId in self.loggedin:
+        avatar = self.contest.getAvatar(avatarId)
+        if avatar is not None:
             log.warn('Avatar %s logs in again!' % avatarId)
-            return pb.IPerspective, self.loggedin[avatarId], lambda:None
+            return pb.IPerspective, avatar, lambda:None
 
-        def cb_user(uid):
-            assert uid
-            typ = uid['type']
-            emailid = uid['emailid']
-            id = uid['id']
-            userid = uid['userid']
-            if typ == db.USER_TEAM:
-                avatar_factory = team.TeamAvatar
-            elif typ == db.USER_JUDGE:
-                avatar_factory = judge.JudgeAvatar
-            elif typ == db.USER_ADMIN:
-                avatar_factory = admin.AdminAvatar
-            else:
-                raise RuntimeError, 'Invalid type returned by database'
-            
-            avatar = avatar_factory(mind, self.contest, int(time.time()),
-                                id, userid, emailid)
-            self.contest.avatars_add(avatarId, avatar)
-            return pb.IPerspective, avatar, \
-                lambda : self.contest.avatars_remove(avatarId)
-                #lambda : self.loggedin.__delitem__(avatarId)
-            
         d = self.contest.dbproxy.users_get(avatarId)
-        d.addCallback(cb_user)
+        return d.addCallback(self.getAvatar, avatarId, mind)
         return d
-
+        
+    def getAvatar(self, uid, avatarId, mind):
+        assert uid
+        typ = uid['type']
+        emailid = uid['emailid']
+        id1 = uid['id']
+        userid = uid['userid']
+        
+        typ_map = {
+            db.USER_TEAM: team.TeamAvatar,
+            db.USER_JUDGE: None, #judge.JudgeAvatar,
+            db.USER_ADMIN: admin.AdminAvatar
+        }
+        try:
+            avatar_factory = typ_map[typ]
+        except KeyError:
+            raise RuntimeError, 'Invalid type returned by database'
+            
+        avatar = avatar_factory(mind, self.contest, int(time.time()),
+                                id1, userid, emailid)
+        self.contest.avatars_add(avatarId, avatar)
+        return pb.IPerspective, avatar, \
+                lambda : self.contest.avatars_remove(avatarId)
+            
 
 # twisted.cred Authentication framework
-class CodehackUsernamePasswordDatabase(object):
+class CodehackChecker:
 
     __implements__ = checkers.ICredentialsChecker
     
@@ -88,40 +89,45 @@ class CodehackUsernamePasswordDatabase(object):
         credentials.IUsernameHashedPassword)
     
     def __init__(self, dbproxy):
-        """
-        @param dbproxy: Contest object's dbproxy
-        """
         self.dbproxy = dbproxy
-        super(CodehackUsernamePasswordDatabase, self).__init__()
     
     # Authenticates given credential information
     def requestAvatarId(self, cred):
+        """Return the avatar id of the avatar which can be accessed using
+        the given credentials.
+
+        credentials will be an object with username and password attributes
+        we need to raise an error to indicate failure or return a username
+        to indicate success. requestAvatar will then be called with the avatar
+        id we returned.
+        """
         log.debug('Checking up credentials for ' + cred.username)
-        def cb_user(uid):
-            log.debug('uid = ' + str(uid))
-            if uid is None:
-                return failure.Failure(error.UnauthorizedLogin())
-            def cb_checked(matched):
-                if matched:
-                    return cred.username
-                return failure.Failure(error.UnauthorizedLogin())
-           
-            return defer.maybeDeferred( cred.checkPassword, uid['passwd']
-                            ).addCallback(cb_checked)
-
         d = self.dbproxy.users_get(cred.username)
-        d.addCallback(cb_user)
-        return d
+        return d.addCallback(self.verify, cred)
 
+    def verify(self, uid, cred):
+        log.debug('uid = ' + str(uid))
+        if uid is None:
+            # No user with that name found
+            return error.UnauthorizedLogin()
+        return defer.maybeDeferred(
+            cred.checkPassword, uid['passwd']).addCallback(
+            self._cbPasswordMatch, cred.username)
+
+    def _cbPasswordMatch(self, matched, username):
+        if matched:
+            return username
+        else:
+            return failure.Failure(error.UnauthorizedLogin())
+
+
+# TODO: This is ugly.  Must use .tac
 def start_server(contest):
     """I'm the main function.  I'll start the Twisted server
-    
-    @param contest: The contest object"""
+    """
     PORT=8800
     p = portal.Portal(CodehackRealm(contest))
-    #p.registerChecker(checkers.InMemoryUsernamePasswordDatabaseDontUse
-    #                    (user1="pass1"))
-    p.registerChecker(CodehackUsernamePasswordDatabase(contest.dbproxy))
+    p.registerChecker(CodehackChecker(contest.dbproxy))
     reactor.listenTCP(PORT, pb.PBServerFactory(p))
     log.info('Starting reactor ...')
     reactor.callLater(0, log.info, 

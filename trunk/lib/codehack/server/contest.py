@@ -17,7 +17,8 @@
 """Contest manipulation"""
 
 import time
-import os, os.path
+import os
+import os.path
 from os.path import join, abspath
 import string
 
@@ -26,7 +27,9 @@ from twisted.internet import reactor
 
 from codehack import paths
 from codehack.util import log
-from codehack.server.db import SqliteDBProxy, USER_ADMIN
+from codehack.server.db import SqliteDBProxy
+from codehack.server.db import USER_ADMIN
+
 from avatar.team import TeamAvatar
 
 
@@ -68,8 +71,6 @@ class Contest(object):
         self._duration = None # If int, then time left to stop started contest
         self._profile = None  # Profile object
         self._ts_start = None # Timestamp during start of contest
-
-
 
         dirs = {}
         for dr in ['repos', 'team', 'judge', 'stat']:
@@ -144,6 +145,12 @@ class Contest(object):
                 team_avatars.append(avatar)
         return team_avatars
 
+    def getAvatar(self, avatarId):
+        "Return the avatar which is logged in, None otherwise"
+        if avatarId in self.avatars:
+            return self.avatars[avatarId]
+        return None
+    
     def avatars_add(self, avatarId, avatar):
         "Called when an avatar logs in"
         log.debug('Avatar [%s] logs in' % avatarId)

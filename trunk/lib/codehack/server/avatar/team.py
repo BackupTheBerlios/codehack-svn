@@ -18,7 +18,6 @@
 
 import os
 import os.path
-import inspect
 import time
 
 from twisted.internet import defer, reactor
@@ -66,7 +65,6 @@ class TeamAvatar(pb.Avatar):
         If contest is running, details will be a tuple of
         (duration, contestage, problems, languages, results, result_acc_index)
         """
-        duration = self.contest.duration
         isrunning = self.contest.isrunning()
         name = self.contest.name
         details = None

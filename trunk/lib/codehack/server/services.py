@@ -73,7 +73,6 @@ def _safe_exec(cmd_line, work_dir='.', res_limit_args=None):
 def safe_system(callback, cmd_line, work_dir='.', res_limit_args=None):
     "Safe version of `system` that uses wrapper script"
     executable, args = _safe_exec(cmd_line, work_dir, res_limit_args)
-    import os
     system(callback, executable, args)
 
 def safe_spawn(pp, cmd_line, work_dir='.', res_limit_args=None):
