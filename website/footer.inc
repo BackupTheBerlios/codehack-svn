@@ -4,9 +4,9 @@
 
     <div id="footer">
       <div class="doNotPrint">
-        <a href="./index.html">Site Map</a> |
-        <a href="./index.html">Feedback</a> |
-        <a href="./index.html">Help</a>
+        <a href="./index.shtml">Site Map</a> |
+        <a href="./index.shtml">Feedback</a> |
+        <a href="./index.shtml">Help</a>
       </div>
 
       <div>

@@ -8,14 +8,14 @@
     <meta name="generator" content="haran" />
 
     <!-- Navigational metadata for large websites (an accessibility feature): -->
-    <link rel="top"      href="./index.html" title="Homepage" />
-    <link rel="up"       href="./index.html" title="Up" />
-    <link rel="first"    href="./index.html" title="First page" />
-    <link rel="previous" href="./index.html" title="Previous page" />
-    <link rel="next"     href="./index.html" title="Next page" />
-    <link rel="last"     href="./index.html" title="Last page" />
-    <link rel="toc"      href="./index.html" title="Table of contents" />
-    <link rel="index"    href="./index.html" title="Site map" />
+    <link rel="top"      href="./index.shtml" title="Homepage" />
+    <link rel="up"       href="./index.shtml" title="Up" />
+    <link rel="first"    href="./index.shtml" title="First page" />
+    <link rel="previous" href="./index.shtml" title="Previous page" />
+    <link rel="next"     href="./index.shtml" title="Next page" />
+    <link rel="last"     href="./index.shtml" title="Last page" />
+    <link rel="toc"      href="./index.shtml" title="Table of contents" />
+    <link rel="index"    href="./index.shtml" title="Site map" />
 
     <link rel="stylesheet" type="text/css" href="./gila-screen.css" media="screen" title="Main" />
     <link rel="stylesheet" type="text/css" href="./gila-print.css" media="screen" title="Print" />
@@ -32,15 +32,15 @@
 
     <div id="header">
       <h1 class="headerTitle">
-        <a href="./index.html" title="Browse to homepage">Codehack 
+        <a href="./index.shtml" title="Browse to homepage">Codehack 
         <span>Programming Contest Control System</span></a>
       </h1>
 
       <div class="subHeader">
         <span class="doNotDisplay">Navigation: </span>
-        <a href="./index.html">Home</a> |
+        <a href="./index.shtml">Home</a> |
         <a href="./screenshots.shtml">Screenshots</a> |
-        <a href="./index.html">Documentation</a> |
+        <a href="./index.shtml">Documentation</a> |
         <a href="mailto:sridhar@users.berlios.de">Contact</a>
       </div>
     </div>
@@ -89,11 +89,11 @@
         <div class="sideBarText"><strong>Source</strong><br />
           <a href="http://developer.berlios.de/project/showfiles.php?group_id=2434">download</a></div>
         <div class="sideBarText"><strong>RPM</strong><br />
-          <a href="./index.html">download</a></div>
+          <a href="./index.shtml">download</a></div>
         <div class="sideBarText"><strong>Debian</strong><br />
-          <a href="./index.html">download</a></div>
+          <a href="./index.shtml">download</a></div>
         <div class="sideBarText"><strong>Windows Client</strong><br />
-          <a href="./index.html">download</a></div>
+          <a href="./index.shtml">download</a></div>
 
         <p class="sideBarTitle">Validation</p>
 
