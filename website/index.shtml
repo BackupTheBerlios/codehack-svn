@@ -1,6 +1,8 @@
 <!--#include virtual="header.inc" -->   
 
  <div id="main-copy">
+      <h1>Codehack development is stopped.  If you wish to take over the 
+      project contact me</h2>
       <h1 id="introduction" style="border-top: none; padding-top: 0;">Introduction</h1>
       <p>Codehack is a programming contest control system.  It aims to compete
       with <a href="http://www.ecs.csus.edu/pc2/">PC2</a> which is proprietory.
