@@ -124,7 +124,7 @@ class ProblemPanel(gtk.VBox):
             ext_info = '\n'.join(
                 [x+': '+str(y) for x,y in self.info['languages'].items()]
             )
-            util.msg_dialog('Invalid file extension "%s"' % ext + \
+            util.msg_dialog('Invalid file extension' + \
                             '\n\n' + \
                             'File extensions allowed are:\n' + \
                             ext_info, gtk.MESSAGE_ERROR)

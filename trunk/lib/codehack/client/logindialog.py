@@ -130,5 +130,6 @@ class LoginDialog(GWidget):
         
     def _ebFailedLogin(self, reason):
         self.set_status('Login failed')
-        print str(reason)
+        reason = str(reason)
+        util.msg_dialog(reason)
         self['but_login'].set_sensitive(True)
