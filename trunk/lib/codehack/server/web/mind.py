@@ -54,11 +54,6 @@ class NevowMind:
             self._startTimer()
         else:
             self._stopTimer()
-        self._sendMeta()
-        # Show the page
-        js = self.js
-        js.visible('loading', False)
-        js.visible('mainBody', True)
 
     def _startTimer(self):
         # Start timer
@@ -72,24 +67,16 @@ class NevowMind:
 
     def _stopTimer(self):
         self.mind.call('time_stop')
-
-    def _sendMeta(self):
-        "Send contest meta-info to browser"
-        js = self.js
-        # Set nodes
-        js.set('loginname', self.avatar.userid)    # Userid
-        js.set('name', self.name)                  # Contest name
-        js.set('duration', self.duration)          # Duration of contest
         
     # Mind methods
     #
 
     def contestStopped(self):
-        self._sendMeta()
         self._stopTimer()
         self.mind.alert("Contest Stopped")
+        self.js.reload()
      
     def contestStarted(self, name, details):
-        self._sendMeta()
         self._startTimer()
         self.mind.alert("Contest Started")
+        self.js.reload()

@@ -150,7 +150,7 @@ class NevowTeamMind(NevowMind):
 
 
 
-SUBMIT = '_submit'
+SUBMIT = 'submit'
 
 class TeamPage(page.MainPage):
 

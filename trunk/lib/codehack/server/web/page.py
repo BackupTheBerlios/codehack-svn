@@ -139,6 +139,15 @@ class MainPage(rend.Page):
     # Meta Info
     #
 
+    def render_loginname(self, ctx, data):
+        return ctx.tag[self.mind.avatar.userid]
+
+    def render_name(self, ctx, data):
+        return ctx.tag[self.mind.name]
+
+    def render_duration(self, ctx, data):
+        return ctx.tag[self.mind.duration]
+
     def render_status(self, ctx, data):
         msg, error = self.status.render()
         if msg is None:
@@ -151,7 +160,6 @@ class MainPage(rend.Page):
         return data
 
     def render_message_row(self, ctx, data):
-        print '*************', data
         ts, msg, error = data
         ctx.tag(class_=["info", "error"][error])
         ctx.fillSlots("msg", msg)

@@ -96,7 +96,6 @@ table.Footer {
 
 /* codehack specific classes */
 .status {
-  background-color: cyan;
   border: 1px solid yello;
   margin: 10px 200px 10px 200px;
 }
@@ -104,7 +103,7 @@ table.Footer {
 .info {
   font-size: 110%;
   color: white;
-  background-color: blue;   
+  background-color: maroon;
 }
 
 .error {
