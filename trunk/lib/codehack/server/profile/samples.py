@@ -239,7 +239,7 @@ class Evaluator(protocol.ProcessProtocol):
         self.sh = sh
         self.input = file(infile, 'r')
         self.output = file(outfile, 'r')
-        self.result = None
+        self.result = sh.RES_RE
         self.defer = defer
 
     def connectionMade(self):

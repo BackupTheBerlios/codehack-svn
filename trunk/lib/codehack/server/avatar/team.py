@@ -70,10 +70,8 @@ class TeamAvatar(pb.Avatar):
     def perspective_get_submissions(self):
         """Return all submissions by user"""
         def done(submissions):
-            print '*', submissions
             subs_full = [] # List of (timestamp, problem_no, result)
             for problem_subs in submissions:
-                print '**', problem_subs
                 if problem_subs:
                     for prob, lang, ts, result in problem_subs:
                         subs_full.append((ts, prob, lang, result))

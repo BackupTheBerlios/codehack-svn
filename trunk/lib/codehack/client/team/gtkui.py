@@ -241,7 +241,12 @@ class TeamSubmissions(object):
         # Runs list
         self.runs.clear()
         run_no = 1
+        print '##', submissions
         for ts, pno, lang, result in submissions:
+            assert ts != None, 'Timestamp is None'
+            assert lang != None, 'Language is None'
+            assert pno != None, 'Problem number is None'
+            assert result != None, 'Result is None'
             pname = self.gui.info['problems'][pno]
             result = self.gui.info['results'][result]
             result = result.split('-',1)[0].strip()
@@ -273,6 +278,7 @@ class TeamGUI(gui.ClientGUI):
                          'get_submissions')
 
     def show_result(self, problem , lang, ts, result):
+        print '^^', problem, lang, ts, result
         text = 'Result for %s\n\n%s\n\nLang: %s\nTime: %d'
         text = text % (self.info['problems'][problem],  
                        self.info['results'][result],

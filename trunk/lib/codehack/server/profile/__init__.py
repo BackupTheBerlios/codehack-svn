@@ -28,6 +28,7 @@ WARNING: API is not yet freezed, it may change in future.
 import pickle
 from twisted.internet import defer, reactor
 
+from codehack.util import log
 
 class AbstractContestProfile(object):
 
@@ -110,7 +111,6 @@ class AbstractContestProfile(object):
             return None  # already upto date
         def done(fullstats):
             for scoregen in self.scoregens:
-                print '**scoregen:', self.score_cache, fullstats
                 scoregen.generate(self.contest.dirs['stat'],
                                 self.contest.name,
                                     self.score_cache, fullstats)
@@ -136,6 +136,7 @@ class AbstractContestProfile(object):
                 'ts': timestamp,
                 'result': result,
             }
+            log.debug('DB_Add(sub): %s' %  sid)
             df = self.contest.dbproxy.submissions_add(sid)
             df.addCallback(followon2, result, sid)
             return df
@@ -177,7 +178,7 @@ class AbstractContestProfile(object):
             result.addCallback(followon1)
             return result
         else:
-            return followon(result)
+            return followon1(result)
         
 
     def get_submissions(self, team, fromproblem=None, returnobject=None):
@@ -229,10 +230,8 @@ class AbstractContestProfile(object):
         Don't use users and fullstats
         See self.calculateScore for return object details
         """
-        print '***get', users, fullstats
         if users is None:
             fullstats = {}
-            print '**avatars', self.contest.avatars
             users = self.contest.avatars.keys()
         if len(users) == 0:
             return fullstats
