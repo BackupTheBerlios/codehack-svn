@@ -17,6 +17,8 @@
 """
 Codehack Nevow Mind
 """
+
+from jsutil import JSUtil
     
 class NevowMind:
 
@@ -26,35 +28,64 @@ class NevowMind:
         self.page = page(self)  # The page
         self.name = None        # Contest name
         self.isrunning = False
+        self.js = JSUtil(mind)
+
+    def __getattr__(self, attr):
+        # Fallback to original mind's attribute
+        return getattr(self.mind, attr)
 
     def init(self):
+        "Called when the mind is first created (on user logon)"
         pass
 
-    # Mind methods
-    #
+    def pageInit(self):
+        "Called when the page is loaded"
+        if self.isrunning:
+            self._startTimer()
+        else:
+            self._stopTimer()
+        self._sendMeta()
+        # Show the page
+        js = self.js
+        js.visible('loading', False)
+        js.visible('mainBody', True)
 
-    def _setStatus(self):
-        "Send to browser the status HTML text"
-        # Status text
-        for key, value in {
-            'name':self.name,
-            'duration': self.duration,
-            'progress': 'Contest is not running'
-            }.items():
-            self.mind.set(key, value)
+    def _startTimer(self):
+        # Start timer
+        age = None
+        duration = None
+        isrunning = self.isrunning
+        if isrunning:
+            age = self.avatar.contest.getContestAge()
+            duration = self.duration
+        self.mind.call('time_start', age, duration)
+
+    def _stopTimer(self):
+        self.mind.call('time_stop')
+
+    def _sendMeta(self):
+        "Send contest meta-info to browser"
+        js = self.js
+        # Set nodes
+        js.set('loginname', self.avatar.userid)    # Userid
+        js.set('name', self.name)                  # Contest name
+        js.set('duration', self.duration)          # Duration of contest
         # Enable/disable form elements
+        # 'Upload' button
         method_call = ['.setAttribute("disabled", "True")',
             '.removeAttribute("disabled")']
         self.mind.sendScript('document.getElementById("submit_button")' + \
                              method_call[int(self.isrunning)])
+        
+    # Mind methods
+    #
 
     def contestStopped(self):
-        self._setStatus()
-        self.mind.call('time_stop')
+        self._sendMeta()
+        self._stopTimer()
         self.mind.alert("Contest Stopped")
      
     def contestStarted(self, name, details):
-        self._setStatus()
-        isrunning, duration, age = self.page.timer_params()
-        self.mind.call('time_start', age, duration)
+        self._sendMeta()
+        self._startTimer()
         self.mind.alert("Contest Started")

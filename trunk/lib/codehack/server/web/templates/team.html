@@ -13,7 +13,8 @@
         "HTML Tidy for Linux/x86 (vers 1st August 2004), see www.w3.org" />
   <title>Welcome</title>
   <span n:render="glue"></span>
-  <span n:render="js_timer"></span>
+  <span n:render="codehack_glue"></span>
+  <!-- <span n:render="js_timer"></span> -->
   
 <!-- TODO: progress bar
 <script language="javascript" src="js/timerbar.js" >
@@ -21,9 +22,15 @@
 
 </head>
 
-<body>
-  <h1><span n:render="loginname">Welcome to 
-      <acronym title="Online Programming Contest">OPC</acronym></span></h1>
+<body n:render="body">
+<div style="visibility: visible;" id="loading">
+Loading ...
+</div>
+
+<div style="visibility: hidden;" id="mainBody">
+
+  <h1><em id="loginname"></em> - Welcome to 
+      <acronym title="Online Programming Contest">OPC</acronym></h1>
 
   <center><p class="status">
       <span n:render="status" class="status"></span>
@@ -32,8 +39,8 @@
   <div class="section">
   <h2>Status</h2>
   <p>
-  <strong>Contest:</strong> <em id="name"><span n:render="name" /></em> <br />
-  <strong>Duration:</strong> <em id="duration"><span n:render="duration" /></em> 
+  <strong>Contest:</strong> <em id="name"></em> <br />
+  <strong>Duration:</strong> <em id="duration"></em> 
   <br />
   <strong>Progress:</strong> <em id="progress"></em> <br />
   </p>
@@ -55,7 +62,7 @@
 
   <div class="section">
   <h2>Runs</h2>
-  <p class="run" id="runs"><span n:render="runs">...</span></p>
+  <div class="run"><p id="runs"></p></div>
   </div>
 
   <div class="section">
@@ -74,5 +81,6 @@
     </span>
   </div>
 
+</div> <!-- visibility div tag -->
 </body>
 </html>

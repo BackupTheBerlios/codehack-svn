@@ -35,8 +35,9 @@ from codehack.server import db
 
 from codehack import paths
       
-def web_file(fil):
-    return join(paths.WEB_DIR, fil)
+def web_file(*fil):
+    return join(paths.WEB_DIR, *fil)
+
 
 class LoginPage(rend.Page):
     
@@ -51,53 +52,6 @@ class LoginPage(rend.Page):
     def logout(self):
         pass
 
-js_timer = """
-// timestamps
-var ts_start
-var ts_end
-var ts_enabled = 0
-
-function time_message(msg){
-    document.getElementById('progress').innerHTML = msg
-}
-
-function time_start(age, total){
-    var date = new Date()
-    ts_cur = parseInt(date.getTime()/1000)
-    ts_start = ts_cur - age
-    ts_end = ts_start + total
-    ts_enabled = 1
-    setTimeout("time_update()", 1000);
-}
-
-function time_update(){
-    if (!ts_enabled) return
-    var date = new Date()
-    var ts_current = parseInt(date.getTime()/1000)
-    var string = ""
-   /* alert(ts_total)
-    alert(ts_current)*/
-    if (ts_current > ts_end){
-        string = "Contest time (" + (ts_end - ts_start) + ") is over"
-        return
-    }else
-        string = (ts_current-ts_start) + "/" + (ts_end-ts_start) + " seconds"
-    /*alert("going:" + string)*/
-    time_message(string)
-    setTimeout("time_update()", 1000)
-}
-
-function time_stop(){
-    ts_enabled = 0
-    time_message('Contest is not running')
-}
-
-if (%(timer_enable)s){
-   time_start(%(age)s, %(total)s)
-}else{
-   time_stop()
-}
-"""
 
 class MainPage(rend.Page):
 
@@ -111,51 +65,28 @@ class MainPage(rend.Page):
 
     child_css = static.File(web_file(cssDirectory),
                            defaultType="text/css")
-
     child_js = static.File(web_file(jsDirectory),
                            defaultType="text/javascript")
+    
+    # The glue
+    render_glue = liveevil.glue
+    render_codehack_glue = T.inlineJS(
+        file(web_file('js', 'codehack.js')).read())                          
 
-
-    def render_loginname(self, ctx, data):
-        return self.avatar.userid
+    def render_body(self, ctx, data):
+        "On page load call self.mind.pageInit"
+        return ctx.tag(onload=liveevil.handler(
+            lambda client: self.mind.pageInit()))
 
     # Meta Info
     #
 
-    def timer_params(self):
-        age = None
-        duration = None
-        isrunning = self.mind.isrunning
-        if isrunning:
-            age = self.avatar.contest.getContestAge()
-            duration = self.mind.duration
-        return isrunning, duration, age
-
-    def render_js_timer(self, ctx, data):
-        isrunning, duration, age = self.timer_params()
-        js_code = js_timer % {
-            'timer_enable': isrunning and 1 or 0,
-            'age': age,
-            'total': duration
-            }
-        return T.inlineJS(js_code)
-    
-    def render_name(self, ctx, data):
-        return self.mind.name
-
-    def render_duration(self, ctx, data):
-        return self.mind.duration
-
     def render_status(self, ctx, data):
         return self.status
-
 
     def render_logout(self, ctx, data):
         return ctx.tag(href=guard.LOGOUT_AVATAR)
 
-    def render_glue(self, ctx, data):
-        return liveevil.glue
-  
     def logout(self):
         print 'Bye'
 

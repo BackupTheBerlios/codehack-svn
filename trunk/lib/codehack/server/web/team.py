@@ -49,13 +49,17 @@ class NevowTeamMind(NevowMind):
         NevowMind.__init__(self, mind, avatar, TeamPage)
 
     def init(self):
-        NevowMind.init(self)
         # Get submissions
         self.submissions = []
         result = self.avatar.perspective_getInformation()
         self.update_details(result['isrunning'], result['name'],
                             result['details'])
+        NevowMind.init(self)
         return self.update_submissions()
+
+    def pageInit(self):
+        self._sendRuns()
+        NevowMind.pageInit(self)
 
     def update_details(self, isrunning, name, details=None):
         "Update new contest details"
@@ -73,10 +77,29 @@ class NevowTeamMind(NevowMind):
 
     def update_submissions(self):
         "Update submissions from database"
+        self.submissions = None
         d = self.avatar.perspective_getSubmissions()
         def _cbGot(submissions):
             self.submissions = submissions
         return d.addCallback(_cbGot)
+
+    def runsHTML(self):
+        "Return submissions stat as HTML"
+        # TODO: make use of nevow's pattern/slots
+        items = []
+        for run in self.submissions:
+            ts, pr, lang, res = run
+            item = T.li[[T.strong[pr], '/', T.i[lang], ': ',
+                    T.em[self.results[res]], ' in ', ts, ' seconds']]
+            items.append(item)
+        items.reverse() # newer run on top!
+        return T.ol[items]
+
+    def _sendRuns(self):
+        "Send runs data to browser"
+        stanobj = self.runsHTML()
+        self.mind.set('runs', stanobj)
+        self.mind.alert('Runs updated.')
 
     def submitProgram(self, filename, filecontent):
         if not self.isrunning:
@@ -105,18 +128,7 @@ class NevowTeamMind(NevowMind):
         if status is None:
             return 'Problem in submission. Try again'
         return True
-
-    def runsHTML(self):
-        "Return submissions stat as HTML"
-        items = []
-        for run in self.submissions:
-            ts, pr, lang, res = run
-            item = T.li[[T.strong[pr], '/', T.i[lang], ': ',
-                    T.em[self.results[res]], ' in ', ts, ' seconds']]
-            items.append(item)
-        items.reverse() # newer run on top!
-        return T.ol[items]
-
+    
     # Mind methods
     #
         
@@ -125,11 +137,7 @@ class NevowTeamMind(NevowMind):
         self.mind.flt('info', msg)
 
     def submissionResult(self, result):
-        def _cbGot(result):
-            stanobj = self.runsHTML()
-            self.mind.set('runs', stanobj)
-            self.mind.alert('Runs updated')
-        return self.update_submissions().addCallback(_cbGot)
+        return self.update_submissions().addCallback(lambda _: self._sendRuns())
 
     def contestStopped(self):
         self.update_details(False, self.name)

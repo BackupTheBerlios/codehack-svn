@@ -347,7 +347,7 @@ for method in ['get_all', 'get_ex', 'get', 'update', 'remove']:
             # bcoz, otherwise table argument will be refered only during call
             attr = '%s_%s' % (table, method)
             comm_attr = getattr(DBProxy, '_TABLE_%s' % method)
-            log.debug('Creating DB method: %s', attr)
+            # log.debug('Creating DB method: %s', attr)
             setattr(DBProxy, attr, lambda self, *args, **kwargs: \
                     comm_attr(self, table, *args, **kwargs))
         proxy_setter(tablename)

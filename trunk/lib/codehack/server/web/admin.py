@@ -40,7 +40,6 @@ class NevowAdminMind(NevowMind):
         NevowMind.__init__(self, mind, avatar, AdminPage)
         
     def init(self):
-        NevowMind.init(self)
         result = self.avatar.perspective_getInformation()
         self.isrunning = result['duration'] is not None
         self.name = result['name']
@@ -49,6 +48,7 @@ class NevowAdminMind(NevowMind):
             self.age = result['age']
         else:
             self.duration = self.age = 'Contest is not running'
+        NevowMind.init(self)
     
     def info(self, msg):
         """Message from server"""
