@@ -19,16 +19,25 @@
 import logging
 
 from twisted.spread import pb
+from twisted.python import log
+
+# TODO: change all references to log.info to log.msg
+#       and then remove this hack
+log.info = log.msg
+
 
 APP_NAME = 'codehack'
 
 # Create logger
-log = logging.getLogger(APP_NAME)
-hdlr = logging.StreamHandler()
-formatter = logging.Formatter(">> %(levelname)s %(message)s")
-hdlr.setFormatter(formatter)
-log.addHandler(hdlr)
-log.setLevel(logging.DEBUG)
+if 0:
+    # We use twisted's log (twistd)
+    # so this one is not needed
+    log = logging.getLogger(APP_NAME)
+    hdlr = logging.StreamHandler()
+    formatter = logging.Formatter(">> %(levelname)s %(message)s")
+    hdlr.setFormatter(formatter)
+    log.addHandler(hdlr)
+    log.setLevel(logging.DEBUG)
 
 def reverse_dict(dct):
     """Reverse the dictionary"""
