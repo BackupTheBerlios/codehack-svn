@@ -1,11 +1,168 @@
-<html>
-<b>CodeHack</b> is a programming contest control software.<br />
-Website construction is in progress.
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
 
-<h2>Source Code snapshots</h2>
-Anonymous checkout: <pre>svn checkout svn://svn.berlios.de/codehack/trunk</pre>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-AU">
+  <head>
+    <meta http-equiv="content-type" content="application/xhtml+xml; charset=UTF-8" />
+    <meta name="author" content="haran" />
+    <meta name="generator" content="haran" />
 
-<h2>Contact</h2>
-<pre>sridharinfinity (at) gmail.com</pre>
+    <!-- Navigational metadata for large websites (an accessibility feature): -->
+    <link rel="top"      href="./index.html" title="Homepage" />
+    <link rel="up"       href="./index.html" title="Up" />
+    <link rel="first"    href="./index.html" title="First page" />
+    <link rel="previous" href="./index.html" title="Previous page" />
+    <link rel="next"     href="./index.html" title="Next page" />
+    <link rel="last"     href="./index.html" title="Last page" />
+    <link rel="toc"      href="./index.html" title="Table of contents" />
+    <link rel="index"    href="./index.html" title="Site map" />
 
+    <link rel="stylesheet" type="text/css" href="./gila-screen.css" media="screen" title="Main" />
+    <link rel="stylesheet" type="text/css" href="./gila-print.css" media="screen" title="Print" />
+    <link rel="stylesheet" type="text/css" href="./gila-print.css" media="print" title="Print" />
+
+    <title>Codehack</title>
+  </head>
+
+  <body>
+    <!-- For non-visual user agents: -->
+      <div id="top"><a href="#main-copy" class="doNotDisplay doNotPrint">Skip to main content.</a></div>
+
+    <!-- ##### Header ##### -->
+
+    <div id="header">
+      <h1 class="headerTitle">
+        <a href="./index.html" title="Browse to homepage">Codehack 
+        <span>Programming Contest Control System</span></a>
+      </h1>
+
+      <div class="subHeader">
+        <span class="doNotDisplay">Navigation: </span>
+        <a href="./index.html">Home</a> |
+        <a href="./index.html">Screenshots</a> |
+        <a href="./index.html">Documentation</a> |
+        <a href="mailto:sridharinfinity (at) gmail.com">Contact</a>
+      </div>
+    </div>
+
+    <div id="side-bar">
+
+      <!-- ##### Left Sidebar ##### -->
+
+      <div class="leftSideBar">
+        <p class="sideBarTitle">This Page</p>
+        <ul>
+          <li><a href="#introduction">Introduction</a></li>
+          <li><a href="#development" title="Development information">Development</a></li>
+        </ul>
+
+        <p class="sideBarTitle">Exits</p>
+        <ul>
+          <li><a href="http://cs.annauniv.edu/~rsridhar">Author's Home</a></li>
+          <li><a href="http://debian.org">Debian GNU/Linux</a></li>
+          <li><a href="http://acmicpc.org">ACM ICPC</a></li>
+          <li><span class="thisPage" title="That's this page!">Codehack</span></li>
+        </ul>
+
+        <p class="sideBarTitle">Comments</p>
+        <span class="sideBarText">
+          Comments and constructive criticisms are welcome
+          <a href="mailto:sridharinfinity (at) gmail.com" title="Email form">via email</a>.
+        </span>
+      </div>
+
+      <!-- ##### Right Sidebar ##### -->
+
+      <div class="rightSideBar">
+        <p class="sideBarTitle">News</p>
+
+        <div class="sideBarText"><strong>22 Oct 04</strong><br />
+          Uploaded codehack website</div>
+
+        <div class="sideBarText"><strong>21 Oct 04</strong><br />
+          codehack now uses <a href="http://svn.berlios.de/viewcvs/codehack/trunk/">subversion</a></div>
+
+        <a class="more">more news &raquo;</a>
+
+        <p class="sideBarTitle">Downloads</p>
+
+        <div class="sideBarText"><strong>Linux</strong><br />
+          <a href="http://developer.berlios.de/project/showfiles.php?group_id=2434">download</a></div>
+        <div class="sideBarText"><strong>Windows</strong><br />
+          <a href="./index.html">download</a></div>
+        <div class="sideBarText"><strong>Windows Client</strong><br />
+          <a href="./index.html">download</a></div>
+
+        <p class="sideBarTitle">Validation</p>
+
+        <div class="sideBarText">Validate the <a href="http://validator.w3.org/check/referer">XHTML</a>
+          and <a href="http://jigsaw.w3.org/css-validator/check/referer">CSS</a> of this page.</div>
+      </div>
+
+    </div>
+
+    <!-- ##### Main Copy ##### -->
+
+    <div id="main-copy">
+      <h1 id="introduction" style="border-top: none; padding-top: 0;">Introduction</h1>
+      <p>Codehack is a programming contest control system.  It aims to compete
+      with <a href="http://www.ecs.csus.edu/pc2/">PC2</a> which is proprietory.
+      Codehack will remain Open Source and is licensed under 
+      <span class="titleTip" title="GNU General Public License">GPL</span>.
+
+      <h1 id="development">Development</h1>
+      <p>Codehack is in it's early stages of development.  Implementation is
+      done in <a href="http://python.org">Python</a> thus making the software
+      more reliable than the C counterparts.</p>
+
+      <p>There are no file releases in the download page.  
+      You can get the current source code from subversion repository.
+      <pre>svn checkout svn://svn.berlios.de/codehack/trunk</pre>
+
+      <p>Codehack uses the following libraries and frameworks
+      <dl>
+        <dt>Twisted</dt>
+        <dd><a href="http://twistedmatrix.com/products/twisted">Twisted</a>
+        is a framework, written in Python, for writing networked 
+        applications. It includes implementations of a number of commonly 
+        used network services such as a web server, an IRC chat server, a 
+        mail server, a relational database interface and an object broker. 
+        Developers can build applications using all of these services as well 
+        as custom services that they write themselves. Twisted also includes 
+        a user authentication system that controls access to services and 
+        provides services with user context information to implement their
+        own security models.</dd>
+
+        <dt>SQLite</dt>
+        <dd><a href="http://sqlite.org">SQLite</a> is a small C library 
+        that implements a self-contained, embeddable, zero-configuration 
+        SQL database engine.</dd>
+
+        <dt>PySQLite</dt>
+        <dd><a href="http://pysqlite.sf.net">PySQLite</a> is the python
+        binding to SQLite</a></dd>
+
+        <dt>PyGTK</dt>
+        <dd><a href="http://pygtk.org">PyGTK</a> provides a convenient wrapper 
+        for the GTK+ library for use in Python programs, taking care of many 
+        of the boring details such as managing memory and type casting. When 
+        combined with PyORBit and gnome-python, it can be used to write full 
+        featured Gnome applications.</dd>
+      </dl>
+
+    <!-- ##### Footer ##### -->
+
+    <div id="footer">
+      <div class="doNotPrint">
+        <a href="./index.html">Site Map</a> |
+        <a href="./index.html">Feedback</a> |
+        <a href="./index.html">Help</a>
+      </div>
+
+      <div>
+        Copyright &copy; 2004, Sridhar | Site design: <a href="http://oswd.org">
+        OSWD</a>.
+      </div>
+    </div>
+  </body>
 </html>
