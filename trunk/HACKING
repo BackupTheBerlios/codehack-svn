@@ -19,7 +19,7 @@ Brief architecture
 	* server is started
 	    : Set contest parameters in profile.py	
         (eg., 'contest_name' variable - must be set)
-        $ twisted -noy startserver.tac
+        $ twisted -noy codehack.tac
 	* different types of users (clients)
 		- admin : who configures the contest
 		- judge : for now, he takes care of answering queries [1]
