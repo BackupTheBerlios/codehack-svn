@@ -38,6 +38,9 @@ class Mind(object):
         """Message from server"""
         print '**Message:', msg
 
+    def remote_client_loggedin(self, clients):
+        self.gui.gotLoggedClients(clients)
+
     def remote_contest_stopped(self):
         self.gui.contest_stopped()
 

@@ -40,6 +40,10 @@ class AdminGUI(gui.ClientGUI):
     def __init__(self, perspective, userid, disconnect):
         super(AdminGUI, self).__init__(perspective, 
                         'Admin', userid, disconnect)
+
+        # Logged in clients {userid=>(type, duration, duration_at)}
+        self.clients = {}
+        
         self._create_gui()
         self._initialize()
         
@@ -56,6 +60,17 @@ class AdminGUI(gui.ClientGUI):
         self['vbox_accounts'].pack_start(wid)
         self.db_users = wid
 
+        # Logged in clients 
+        model = gtk.ListStore(str, str) # Userid, Type
+        self['tv_logged'].set_model(model)
+        for index, title in [(0,'Userid'), (1, 'Type')]:
+            cell = gtk.CellRendererText()
+            col = gtk.TreeViewColumn(title, cell, text=index)
+            self['tv_logged'].append_column(col)
+        self['tv_logged'].connect('cursor-changed', self._client_selected)
+        self.clients_model = model
+        
+
     def show(self):
         self.widget.show()
         self.db_users.show_all()
@@ -67,12 +82,40 @@ class AdminGUI(gui.ClientGUI):
         def done(result):
             name, duration, age = result
             self._update_contest_ui(name, duration, age)
+            self.call_remote('Getting logged in clients information', 
+                         self.gotLoggedClients, 'get_clients')
         self.call_remote('Getting contest information', done, 
                          'get_contest_info')
+    
+    def gotLoggedClients(self, result):
+        assert result
+        self.clients = {}
+        for userid, (typ, duration) in result.items():
+            self.clients[userid] = (typ, duration, time.time())
+        self._update_clients_ui()
 
     def contest_stopped(self):
         "Called by mind on stop of contest"
         self._update_contest_ui(None, None, 0)
+        
+    def _client_selected(self, tv, *args):
+        mdl, iter = tv.get_selection().get_selected()
+        userid = mdl.get_value(iter, 0)
+        # Render info about userid
+        typ, duration, duration_at = self.clients[userid]
+        duration = duration + (time.time()-duration_at)
+        self['lbl_client'].set_markup('Duration: %d seconds' % duration)
+    
+    def _update_clients_ui(self):
+        """Update UI from self.clients"""
+        model = self.clients_model
+        model.clear()
+        view_text = []
+        [view_text.append((userid, typ)) for userid, (typ, duration, at) in \
+                                    self.clients.items()]
+        view_text.sort()
+        for userid, typ in view_text:
+            model.append((userid, typ))
         
     def _update_contest_ui(self, name, duration, age):
         """Updates UI based on contest info, duration is None if contest

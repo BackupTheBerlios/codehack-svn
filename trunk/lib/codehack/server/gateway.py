@@ -16,6 +16,8 @@
 
 """Contains Twisted's Portal, Realm, ..."""
 
+import time
+
 from twisted.cred import checkers, portal, error, credentials
 from twisted.internet import reactor, defer
 from twisted.spread import pb
@@ -64,8 +66,9 @@ class CodehackRealm:
             else:
                 raise RuntimeError, 'Invalid type returned by database'
             
-            avatar = avatar_factory(mind, self.contest, id, userid, emailid)
-            self.loggedin[avatarId] = avatar
+            avatar = avatar_factory(mind, self.contest, int(time.time()),
+                                id, userid, emailid)
+            self.contest.client_loggedin(avatarId, avatar)
             return pb.IPerspective, avatar, \
                 lambda : self.loggedin.__delitem__(avatarId)
             
@@ -119,6 +122,7 @@ def start_server(contest):
     p.registerChecker(CodehackUsernamePasswordDatabase(contest.dbproxy))
     reactor.listenTCP(PORT, pb.PBServerFactory(p))
     log.info('Starting reactor ...')
-    reactor.callLater(0, log.info, 'Server Ready. Listening at port %d' % PORT)
+    reactor.callLater(0, log.info, 
+                'Server Ready. Listening at port %d' % PORT)
     reactor.run()
     log.info('Reactor exited')

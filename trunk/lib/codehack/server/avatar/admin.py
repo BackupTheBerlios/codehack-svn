@@ -16,6 +16,8 @@
 
 """Admin Avatar"""
 
+import time
+
 from twisted.spread import pb
 from twisted.python import components
 from twisted.internet import defer
@@ -33,10 +35,11 @@ class AdminAvatar(pb.Avatar):
             - type is number in avatar and string in client
     """
 
-    def __init__(self, mind, contest, id, userid, emailid):
+    def __init__(self, mind, contest, loginat, id, userid, emailid):
         """
         @param mind:    Client remote object
         @param contest: The contest object
+        @param loginat: Timestamp when logged in
         @param id:      The database row id of this user
         @param Userid:  User id
         @param emailid: emailid of the user
@@ -47,7 +50,12 @@ class AdminAvatar(pb.Avatar):
         self.emailid = emailid
         self.contest = contest
         self.dbproxy = contest.dbproxy
+        self.loginat = loginat
         self.whoami = 'admin'
+
+    def get_connection_age(self):
+        "Return the duration in seconds when avatar is logged in"
+        return int(time.time()-self.loginat)
 
     def contestStarted(self):
         pass
@@ -76,6 +84,19 @@ class AdminAvatar(pb.Avatar):
     def perspective_stop_contest(self):
         self.contest.stop_contest()
 
+    def client_loggedin(self):
+        "Notification when a client logins"
+        self.mind.callRemote('client_loggedin', 
+                        self.perspective_get_clients())
+    
+    def perspective_get_clients(self):
+        """Return logged in clients dict
+        {userid=>(typ, duration)}"""
+        clients = {}
+        for userid, avatar in self.contest.avatars.items():
+            clients[userid] = (avatar.whoami, avatar.get_connection_age())
+        return clients
+    
     # Contest information
 
     def perspective_get_contest_info(self):

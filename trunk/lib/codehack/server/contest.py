@@ -144,6 +144,12 @@ class Contest(object):
                 team_avatars.append(avatar)
         return team_avatars
 
+    def avatars_add(self, avatarId, avatar):
+        self.avatars[avatarId] = avatar
+        if self.avatars.has_key('admin'):
+            # Notify admin
+            self.avatars['admin'].client_logged_in(avatarsId)
+
     def get_contest_age(self):
         "Return number of seconds since start of contest"
         assert self.isrunning() is True, 'Contest is not running!!'

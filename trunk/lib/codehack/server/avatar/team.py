@@ -19,6 +19,7 @@
 import os
 import os.path
 import inspect
+import time
 
 from twisted.internet import defer, reactor
 from twisted.spread import pb
@@ -30,10 +31,11 @@ from codehack.server import db
 
 class TeamAvatar(pb.Avatar):
 
-    def __init__(self, mind, contest, id, userid, emailid):
+    def __init__(self, mind, contest, loginat, id, userid, emailid):
         """
         @param mind:    Client remote object
         @param contest: The contest object
+        @param loginat: Timestamp when logged in
         @param id:      The database row id of this user
         @param Userid:  User id
         @param emailid: emailid of the user
@@ -42,6 +44,7 @@ class TeamAvatar(pb.Avatar):
         self.mind = mind
         self.whoami = 'team'
         self.id = id
+        self.loginat = loginat
         self.userid = userid
         self.emailid = emailid
         self.contest = contest
@@ -51,6 +54,10 @@ class TeamAvatar(pb.Avatar):
         self.contest_started = False
         if contest.isrunning():
             self.contestStarted()
+
+    def get_connection_age(self):
+        "Return the duration in seconds when avatar is logged in"
+        return int(time.time()-self.loginat)
 
     def perspective_get_contest_info(self):
         """Returns isrunning, name, details tuple.
