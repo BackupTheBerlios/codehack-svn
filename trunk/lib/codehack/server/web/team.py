@@ -32,8 +32,10 @@ from nevow import static
 from codehack import paths
 
 from mind import NevowMind
+
 import page
 import msg
+import error
 
 
 class StaticItemStore:
@@ -115,36 +117,30 @@ class NevowTeamMind(NevowMind):
         
     def submitProgram(self, filename, filecontent):
         if not self.isrunning:
-            return msg.CNT_NOT_RUNNING
+            raise error.ContestNotRunning, 'You cannot submit your programs'
 
-        class InvalidFilename(ValueError):
-            "Invalid filename sent"
-
+        IFE = error.InvalidFilename
+        if not '.' in filename:
+            raise IFE, "Filename must have an extension"
+        splits = filename.split('.')
+        if len(splits) != 2:
+            raise IFE, "Filename must have single 'dot'"
+        progname, ext = filename.split('.')
         try:
-            if not '.' in filename:
-                raise InvalidFilename
-            splits = filename.split('.')
-            if len(splits) != 2:
-                raise InvalidFilename
-            progname, ext = filename.split('.')
-            try:
-                no = int(progname[1:])
-            except ValueError:
-                raise InvalidFilename
-            if no < 0 or no>=len(self.problems):
-                raise InvalidFilename
-            for lang, extensions in self.languages.items():
-                if ext in extensions:
-                    break
-            else:
-                return msg.FN_INVALID_EXT
-        except InvalidFilename:
-            return msg.FN_INVALID
+            no = int(progname[1:])
+        except ValueError:
+            raise IFE, "Problem number must be specified"
+        if no < 0 or no>=len(self.problems):
+            raise IFE, "Problem number is not in range"
+        for lang, extensions in self.languages.items():
+            if ext in extensions:
+                break
+        else:
+            raise IFE, "Unsupported extension"
         # no, lang
         status = self.avatar.perspective_submitProblem(no, filecontent, lang)
         if status is None:
-            return 'Problem in submission. Try again'
-        return msg.FN_OK
+            raise error.WebServiceError, "Problem in submission!"
     
     # Mind methods
     #
@@ -173,22 +169,25 @@ SUBMIT = '_submit'
 class TeamPage(page.MainPage):
 
     userPage = loaders.xmlfile(join(paths.WEB_DIR, 'team.html'))
-    
+
     def __init__(self,mind):
+        super(TeamPage, self).__init__()
         self.mind = mind
         self.avatar = mind.avatar
-        self.status = '' # status messages
-
 
     def locateChild(self, ctx, segments):
- 
+
         if segments[0] == SUBMIT:
-            # Submit user submitted program
+            # User has submitted program
             fields = inevow.IRequest(ctx).fields
             filecontent = fields.getvalue('source')
             filename = fields['source'].filename
-            print 'GGGGGG', filename
-            self.status = self.mind.submitProgram(filename, filecontent)
+            try:
+                status = self.mind.submitProgram(filename, filecontent)
+            except error.WebServiceError, err:
+                self.status.error(err.getMessage())
+            else:
+                self.status.info('Program submitted successfully')
             return url.URL.fromRequest(inevow.IRequest(ctx)), ()
         
         return super(TeamPage, self).locateChild(ctx, segments)

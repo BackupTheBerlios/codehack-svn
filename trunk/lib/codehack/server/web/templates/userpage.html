@@ -29,6 +29,22 @@ Loading ...
 
 <div style="visibility: hidden;" id="mainBody">
 
+  <h1><em id="loginname"></em> - Welcome to 
+      <acronym title="Online Programming Contest">OPC</acronym></h1>
+
+  <center><p class="status">
+      <span n:render="status" class="status"></span>
+  </p></center>
+
+  <div class="section">
+  <h2>Status</h2>
+  <p>
+  <strong>Contest:</strong> <em id="name"></em> <br />
+  <strong>Duration:</strong> <em id="duration"></em> 
+  <br />
+  <strong>Progress:</strong> <em id="progress"></em> <br />
+  </p>
+  </div>
 
   <!-- Point of speciality - Insert user page here -->
   <div n:render="userpage"></div>

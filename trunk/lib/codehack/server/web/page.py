@@ -34,7 +34,9 @@ from codehack.server import auth
 from codehack.server import db
 
 from codehack import paths
-      
+
+import error
+
 def web_file(*fil):
     return join(paths.WEB_DIR, *fil)
 
@@ -51,6 +53,44 @@ class LoginPage(rend.Page):
 
     def logout(self):
         pass
+
+
+class StatusNotifier:
+
+    """Convinient class for notifying info/error messages
+    to browser that either sent POST/GE request or a liveevil
+    callback"""
+
+    DEFAULT = 'none'
+
+    def __init__(self):
+        self._msg = self.DEFAULT
+        self._error = False
+
+    def info(self, info):
+        "Information to be displayed in browser"
+        self._msg = info
+        self._error = False
+
+    def error(self, error):
+        "Error to be displayed in browser"
+        self._msg = error
+        self._error = True
+
+
+    def _reset(self):
+        self._msg = self.DEFAULT
+        self._error = False
+
+    def render(self):
+        msg, error = self._msg, self._error
+        self._reset()
+        return msg
+
+    def send(self, mind, tagname):
+        msg, error = self._msg, self._error
+        self._reset()
+        mind.set(tagname, msg)
 
 
 class MainPage(rend.Page):
@@ -78,7 +118,11 @@ class MainPage(rend.Page):
     # The glue
     render_glue = liveevil.glue
     render_codehack_glue = T.inlineJS(
-        file(web_file('js', 'codehack.js')).read())                          
+        file(web_file('js', 'codehack.js')).read())
+
+    def __init__(self, *args, **kwargs):
+        super(MainPage, self).__init__(*args, **kwargs)
+        self.status = StatusNotifier()
 
     def render_body(self, ctx, data):
         "On page load call self.mind.pageInit"
@@ -92,7 +136,7 @@ class MainPage(rend.Page):
     #
 
     def render_status(self, ctx, data):
-        return self.status
+        return self.status.render()
 
     def render_logout(self, ctx, data):
         return ctx.tag(href=guard.LOGOUT_AVATAR)
