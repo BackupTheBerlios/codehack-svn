@@ -3,12 +3,14 @@ Release (0.10) TODO
 ===================
     * Refactor Profile (*major* work, need UI in client?, ..??)
     * Ensure generic protocol (requires brainstorming)
+    * Nevow web interface (major work)
 
 Bugs
 ====
     * TeamClient - Labels inside ProblemPanel doesn't change on .set_text
                    also ScrolledWindow warning is new in pygtk-2.4 
                    side-effect?
+    * Nevow: self.mind.set doesn't work in result callback in team mind
 
 ISSUES to be solved
 ===================
@@ -34,8 +36,14 @@ Minor low-priority enhancements
 ===============================
 
 1. User Interface:
-	(.) DBEdit: dbl-clicking should 'edit' that row
-	(.) buttons: set stock icons for custom-labelled buttons
-	(.) window: better resizing, constant size (even after
-		showing/hiding certain widgets as in DBEdit)
-    (.) Confirmation dialog for critical actions
+    * DBEdit: dbl-clicking should 'edit' that row
+    * buttons: set stock icons for custom-labelled buttons
+    * window: better resizing, constant size (even after
+        showing/hiding certain widgets as in DBEdit)
+    * Confirmation dialog for critical actions
+
+2. Web Interface
+    * Progress bar for contest time: 
+        http://www.dynamicdrive.com/dynamicindex11/dhtmlprogress.htm
+    * Themable interface (css)
+    * Mediawiki/preferences style tabbar

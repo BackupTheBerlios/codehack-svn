@@ -21,6 +21,14 @@ Team Web Mind
 from nevow import tags as T
 
 
+class StaticItemStore:
+
+    def __init__(self, value):
+        self.value = value
+
+    def __getitem__(self, item):
+        return self.value
+
 class NevowTeamMind(object):
     
     def __init__(self, mind, avatar):
@@ -30,37 +38,87 @@ class NevowTeamMind(object):
 
     def init(self):
         # Get Contest details
+        self.submissions = []
         result = self.avatar.perspective_getInformation()
-        self.isrunning = result['isrunning']
-        self.name = result['name']
-        d = result['details']
+        self.update_details(result['isrunning'], result['name'],
+                            result['details'])
+
+    def update_details(self, isrunning, name, details=None):
+        self.isrunning = isrunning
+        self.name = name
+        d = details
+        if d is None:
+            d = StaticItemStore('Contest is not running')
         self.duration = d['duration']
         self.age = d['age']
         self.problems = d['problems']
-        self.language = d['languages']
+        self.languages = d['languages']
         self.results = d['results']
         self.result_acc_index = d['result_acc_index']
+
+    def update_submissions(self):
+        "Update submissions from database"
+        d = self.avatar.perspective_getSubmissions()
+        def _cbGot(submissions):
+            self.submissions = submissions
+        return d.addCallback(_cbGot)
+
+    def submitProgram(self, filename, filecontent):
+        if not self.isrunning:
+            return 'Contest is not running. You cannot upload file.'
+        if not '.' in filename:
+            return 'Filename should have an extension'
+        progname, ext = filename.split('.')
+        try:
+            no = int(progname[1:])
+        except ValueError:
+            return 'Filename should have problem number'
+        if no < 0 or no>=len(self.problems):
+            return 'Filename should have problem number in range %d to %d' \
+                   % (0, len(self.problems-1))
+        for lang, extensions in self.languages.items():
+            if ext in extensions:
+                break
+        else:
+            return 'No supported language accepts this file. Check your ' + \
+                   'file extension'
+        # no, lang
+        status = self.avatar.perspective_submitProblem(no, filecontent, lang)
+        if status is None:
+            return 'Problem in submission. Try again'
+        return True
+
+    def runsHTML(self):
+        "Return submissions stat as HTML"
+        items = []
+        for run in self.submissions:
+            ts, pr, lang, res = run
+            item = T.li[[T.strong[pr], '/', T.i[lang], ': ',
+                    T.em[self.results[res]], ' in ', ts, ' seconds']]
+            items.append(item)
+        items.reverse() # newer run on top!
+        return T.ol[items]
+
+    # Mind methods
+    #
         
     def info(self, msg):
         """Message from server"""
-        self.mind.set('info', msg)
+        self.mind.flt('info', msg)
 
     def submissionResult(self, result):
-        d = self.avatar.perspective_getSubmissions()
-        def _cbGot(submissions):
-            s = ''
-            for run in submissions:
-                ts, pr, lang, res = run
-                s = s + '%d Seconds, Problem %d, Lang %s, Result %d -- ' % (ts, pr, lang, res)
-            self.mind.set('runs', T.b[s])
-        return d.addCallback(_cbGot)
+        def _cbGot(result):
+            stanobj = self.runsHTML()
+            print '****', stanobj
+            self.mind.flt('runs', stanobj)
+        return self.update_submissions().addCallback(_cbGot)
 
     def contestStopped(self):
+        self.update_details(False, self.name)
         self.mind.sendScript('alert("Stopped");')
         # self.gui.contestStopped()
 
     def contestStarted(self, name, details):
-        s = str(dir(self.mind))
-        self.mind.sendScript('alert("Started");')
-        self.info(T.i[s])
-        # self.gui.contestStarted(name, details)
+        self.update_details(True, name, details)
+        self.mind.sendScript(
+            'alert("Started");')

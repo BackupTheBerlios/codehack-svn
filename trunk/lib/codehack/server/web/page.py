@@ -31,6 +31,7 @@ from nevow import liveevil
 from nevow import inevow
 from nevow import guard
 from nevow import url
+from nevow import static
 
 from codehack import paths
 from codehack.server import auth
@@ -61,17 +62,40 @@ class MainPage(rend.Page):
     addSlash = True
     docFactory = loaders.xmlfile(web_file('main.html'))
 
+    cssDirectory = 'styles'
+    jsDirectory = 'js'
+
     def __init__(self,mind):
         self.mind = mind
         self.avatar = mind.avatar
+        self.status = '' # status messages
+
+    def child_css(self, request):
+        return static.File(web_file(self.cssDirectory),
+                           defaultType="text/css")
+
+    def child_js(self, request):
+        return static.File(web_file(self.jsDirectory),
+                           defaultType="text/javascript")
+
+    def child_foo(self, request):
+        return self
 
     def locateChild(self, ctx, segments):
  
         if segments[0] == SUBMIT:
             fields = inevow.IRequest(ctx).fields
             filecontent = fields.getvalue('source')
-            self.mind.info('<b>File:</b>' + filecontent + fields['source'].filename)
-            d = self.avatar.perspective_submitProblem(0, filecontent, 'Python')
+            filename = fields['source'].filename
+            self.mind.info(
+                '<b>File:</b>' + filecontent + filename)
+            status = self.mind.submitProgram(filename, filecontent)
+            if status is True:
+                self.status = 'Successfully submitted'
+            else:
+                self.status = status
+            
+            #d = self.avatar.perspective_submitProblem(0, filecontent, 'Python')
             # Redirect away from the POST
             return url.URL.fromRequest(inevow.IRequest(ctx)), ()
         return rend.Page.locateChild(self, ctx, segments)
@@ -90,8 +114,14 @@ class MainPage(rend.Page):
 
     def render_duration(self, ctx, data):
         return self.mind.duration
-        
+
     def render_status(self, ctx, data):
+        return self.status
+
+    def render_runs(self, ctx, data):
+        return self.mind.runsHTML()
+        
+    def render_statusNOTUSED(self, ctx, data):
         i = self.avatar.perspective_getInformation()
         if not i['isrunning']:
             return T.b['Contest is NOT running']
