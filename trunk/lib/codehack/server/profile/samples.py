@@ -18,7 +18,10 @@
 
 
 import os.path
-from twisted.internet import defer, protocol, error, process
+from twisted.internet import defer
+from twisted.internet import protocol
+from twisted.internet import error
+from twisted.internet import process
 
 # service is API to codehack for ContestProfile's
 from codehack.server import services, profile, scoregen
@@ -175,50 +178,49 @@ class SimpleCP(profile.AbstractContestProfile):
 
         cmd_compile, cmd_exe = self.languages[language][:2]
 
-        # Save locals() for use in followon's
-        #  FIXME: ugly! corrupts self's namespace!!
-        #    also "overlapping call" BUG! BUG! BUG!
-        self.result_defer = defer.Deferred()
-        self.cmd_exe = cmd_exe
-        self.input_dict = input_dict
-        self.problem = problem
-        self.team = team
-        self.workdir = workdir
+        # Data to be passed to followon's
+        data = {}
+        data['result_defer'] = defer.Deferred()
+        data['cmd_exe'] = cmd_exe
+        data['input_dict'] = input_dict
+        data['problem'] = problem
+        data['team'] = team
+        data['workdir'] = workdir
         
         # Compile, if necessary
         if cmd_compile:
-            services.safe_system(self._followon_compiled, 
+            services.safe_system(self._followon_compiled, data,
                                cmd_compile % input_dict, 
                                workdir, self.res_limits)
         else:
-            self._followon_compiled(0)
+            self._followon_compiled(0, data)
 
         # Followon will take care, just return from method 
-        return self.result_defer
+        return data['result_defer']
             
 
     # Followon's after submit()
     #  Each followon method will result argument, but don't bother
-    def _followon_compiled(self, result):
+    def _followon_compiled(self, result, data):
         # Now the program is compiled
         #  result contains the return code (surprisingly
         
         # Compilation error?
         if result != 0:
-            self.result_defer.callback(self.RES_CE)
+            data['result_defer'].callback(self.RES_CE)
             return
 
         # Proceed with execution
-        infile = os.path.join(self.judge_data_dir, 'p%d.in' % self.problem)
-        outfile = os.path.join(self.judge_data_dir, 'p%d.out' % self.problem)
+        infile = os.path.join(self.judge_data_dir, 'p%d.in' % data['problem'])
+        outfile = os.path.join(self.judge_data_dir, 'p%d.out' % data['problem'])
         # See class Evaluator below
-        pp = Evaluator(self, self.result_defer, infile, outfile)
-        services.safe_spawn(pp, self.cmd_exe % self.input_dict, 
-                          self.workdir, self.res_limits)
-        self.result_defer.addCallback(self._followon_executed)
-        return self.result_defer
+        pp = Evaluator(self, data['result_defer'], infile, outfile)
+        services.safe_spawn(pp, data['cmd_exe'] % data['input_dict'], 
+                          data['workdir'], self.res_limits)
+        data['result_defer'].addCallback(self._followon_executed, data)
+        return data['result_defer']
 
-    def _followon_executed(self, result):
+    def _followon_executed(self, result, data):
         return result
 
 
@@ -277,4 +279,8 @@ class Evaluator(protocol.ProcessProtocol):
             self.transport.signalProcess("KILL")
         except process.ProcessExitedAlready:
             pass
-        self.defer.callback(self.result)
+        try:
+            self.defer.callback(self.result)
+        except defer.AlreadyCalledError:
+            pass # FIXME: I got confused when to .callback and when not!
+            

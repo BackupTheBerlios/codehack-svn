@@ -100,6 +100,8 @@ class AdminGUI(gui.ClientGUI):
         
     def _get_selected_client(self):
         mdl, iter = self['tv_logged'].get_selection().get_selected()
+        if iter == None:
+            return
         userid = mdl.get_value(iter, 0)
         return userid
     

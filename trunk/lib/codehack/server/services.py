@@ -34,9 +34,13 @@ class SimplePP(protocol.ProcessProtocol):
     
     "A simple ProcessProtocol that callbacks on process exit"
 
-    def __init__(self, callback):
+    def __init__(self, callback, cb_args=None):
         self.defer = defer.Deferred()
-        self.defer.addCallback(callback)
+        # FIXME: Is this really required?
+        if cb_args:
+            self.defer.addCallback(callback, cb_args)
+        else:
+            self.defer.addCallback(callback)
         print 'SPP: init'
 
     def processEnded(self, status):
@@ -53,9 +57,9 @@ class SimplePP(protocol.ProcessProtocol):
         print data,
 
 
-def system(callback, executable, args):
+def system(callback, cb_arg, executable, args):
     "Asynchronous version of os.system using twisted's ProcessProtocol"
-    pp = SimplePP(callback)
+    pp = SimplePP(callback, cb_arg)
     log.debug('system exe:[%s] args:[%s]' % (executable, args))
     reactor.spawnProcess(pp, executable, args)
  
@@ -70,10 +74,10 @@ def _safe_exec(cmd_line, work_dir='.', res_limit_args=None):
         args = args + res_limit_args
     return executable, args
     
-def safe_system(callback, cmd_line, work_dir='.', res_limit_args=None):
+def safe_system(callback, cb_arg, cmd_line, work_dir='.', res_limit_args=None):
     "Safe version of `system` that uses wrapper script"
     executable, args = _safe_exec(cmd_line, work_dir, res_limit_args)
-    system(callback, executable, args)
+    system(callback, cb_arg, executable, args)
 
 def safe_spawn(pp, cmd_line, work_dir='.', res_limit_args=None):
     "Safe version of reactor.spawnProcess"

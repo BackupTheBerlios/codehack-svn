@@ -1,6 +1,9 @@
 
-Critical BUGS
-=============
+Release (0.10) TODO
+===================
+    * Use .tac
+    * Refactor Profile (*major* work, need UI in client?, ..??)
+    * Ensure generic protocol (requires brainstorming)
 
 ISSUES to be solved
 ===================
