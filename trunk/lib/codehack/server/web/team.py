@@ -18,26 +18,30 @@
 Team Web Mind
 """
 
+from os.path import join
+
+from nevow import loaders
+from nevow import rend
 from nevow import tags as T
+from nevow import liveevil
+from nevow import inevow
+from nevow import guard
+from nevow import url
+from nevow import static
 
+from codehack import paths
 
-class StaticItemStore:
+from mind import NevowMind
+import page
 
-    def __init__(self, value):
-        self.value = value
+class NevowTeamMind(NevowMind):
 
-    def __getitem__(self, item):
-        return self.value
-
-class NevowTeamMind(object):
-    
     def __init__(self, mind, avatar):
-        self.mind  = mind
-        self.avatar = avatar
-        self.init()
+        NevowMind.__init__(self, mind, avatar, TeamPage)
 
     def init(self):
-        # Get Contest details
+        NevowMind.init(self)
+        # Get submissions
         self.submissions = []
         result = self.avatar.perspective_getInformation()
         self.update_details(result['isrunning'], result['name'],
@@ -45,6 +49,7 @@ class NevowTeamMind(object):
         return self.update_submissions()
 
     def update_details(self, isrunning, name, details=None):
+        "Update new contest details"
         self.isrunning = isrunning
         self.name = name
         d = details
@@ -114,7 +119,7 @@ class NevowTeamMind(object):
         def _cbGot(result):
             # FIXME: this liveevil stuff not working!
             # stanobj = self.runsHTML()
-            # self.mind.flt('runs', stanobj)
+            # self.mind.set('runs', stanobj)
 
             # Since the above doesn't work :(, we got for a full
             # page reload!
@@ -125,10 +130,52 @@ class NevowTeamMind(object):
 
     def contestStopped(self):
         self.update_details(False, self.name)
-        self.mind.sendScript('alert("Stopped");')
+        self.mind.sendScript('alert("Contest Stopped");')
         # self.gui.contestStopped()
 
     def contestStarted(self, name, details):
         self.update_details(True, name, details)
         self.mind.sendScript(
-            'alert("Started");')
+            'alert("Contest Started");')
+
+
+
+SUBMIT = '_submit'
+
+class TeamPage(page.MainPage):
+
+    docFactory = loaders.xmlfile(
+        join(paths.WEB_DIR, 'team.html'))
+
+
+    def __init__(self,mind):
+        self.mind = mind
+        self.avatar = mind.avatar
+        self.status = '' # status messages
+
+
+    def locateChild(self, ctx, segments):
+ 
+        if segments[0] == SUBMIT:
+            # Submit user submitted program
+            fields = inevow.IRequest(ctx).fields
+            filecontent = fields.getvalue('source')
+            filename = fields['source'].filename
+            status = self.mind.submitProgram(filename, filecontent)
+            if status is True:
+                self.status = 'Successfully submitted'
+            else:
+                self.status = status
+            
+            return url.URL.fromRequest(inevow.IRequest(ctx)), ()
+        return rend.Page.locateChild(self, ctx, segments)
+
+    def render_runs(self, ctx, data):
+        return self.mind.runsHTML()
+ 
+    def render_submitProblemForm(self, ctx, data):
+        return ctx.tag(
+            action=url.here.child(SUBMIT), method="post",
+            enctype="multipart/form-data")
+
+

@@ -23,21 +23,16 @@ from os.path import join
 
 from twisted.cred import portal
 from twisted.cred import checkers
-
-from nevow import loaders
 from nevow import rend
-from nevow import tags as T
-from nevow import liveevil
-from nevow import inevow
+from nevow import loaders
 from nevow import guard
-from nevow import url
+from nevow import liveevil
 from nevow import static
 
-from codehack import paths
 from codehack.server import auth
 from codehack.server import db
 
-
+from codehack import paths
       
 def web_file(fil):
     return join(paths.WEB_DIR, fil)
@@ -55,20 +50,16 @@ class LoginPage(rend.Page):
     def logout(self):
         pass
 
-SUBMIT = '_submit'
 
 class MainPage(rend.Page):
 
+    "Common Page methods"
+
     addSlash = True
-    docFactory = loaders.xmlfile(web_file('main.html'))
 
-    cssDirectory = 'styles'
-    jsDirectory = 'js'
-
-    def __init__(self,mind):
-        self.mind = mind
-        self.avatar = mind.avatar
-        self.status = '' # status messages
+    # Directories
+    cssDirectory = join(paths.WEB_DIR, 'styles')
+    jsDirectory = join(paths.WEB_DIR, 'js')
 
     def child_css(self, request):
         return static.File(web_file(self.cssDirectory),
@@ -78,27 +69,6 @@ class MainPage(rend.Page):
         return static.File(web_file(self.jsDirectory),
                            defaultType="text/javascript")
 
-    def child_foo(self, request):
-        return self
-
-    def locateChild(self, ctx, segments):
- 
-        if segments[0] == SUBMIT:
-            fields = inevow.IRequest(ctx).fields
-            filecontent = fields.getvalue('source')
-            filename = fields['source'].filename
-            self.mind.info(
-                '<b>File:</b>' + filecontent + filename)
-            status = self.mind.submitProgram(filename, filecontent)
-            if status is True:
-                self.status = 'Successfully submitted'
-            else:
-                self.status = status
-            
-            #d = self.avatar.perspective_submitProblem(0, filecontent, 'Python')
-            # Redirect away from the POST
-            return url.URL.fromRequest(inevow.IRequest(ctx)), ()
-        return rend.Page.locateChild(self, ctx, segments)
 
     def render_loginname(self, ctx, data):
         return self.avatar.userid
@@ -118,33 +88,12 @@ class MainPage(rend.Page):
     def render_status(self, ctx, data):
         return self.status
 
-    def render_runs(self, ctx, data):
-        return self.mind.runsHTML()
-        
-    def render_statusNOTUSED(self, ctx, data):
-        i = self.avatar.perspective_getInformation()
-        if not i['isrunning']:
-            return T.b['Contest is NOT running']
-        name = i['name']
-        i = i['details']
-        # duration, age, problems, languages, results, result_acc_index
-        html = T.p[T.h3['Problems'], T.i[str(i['problems'])], \
-                T.h3['Duration'], T.i[str(i['duration'])]]
-        return html
-        
-    def render_submitProblemForm(self, ctx, data):
-        return ctx.tag(action=url.here.child(SUBMIT), method="post", enctype="multipart/form-data")
-                    
+
     def render_logout(self, ctx, data):
         return ctx.tag(href=guard.LOGOUT_AVATAR)
 
     def render_glue(self, ctx, data):
         return liveevil.glue
-    
-    def fun(self):
-        self.mind.sendScript('alert("Good boy!");')
-        from twisted.internet import reactor
-        reactor.callLater(3, self.fun)
-    
+  
     def logout(self):
         print 'Bye'

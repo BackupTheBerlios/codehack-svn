@@ -45,10 +45,8 @@ class WebRealm(auth.CodehackRealm):
         return self.interface, page.LoginPage(), lambda: None
 
     def requestThisAvatar(self, avatarId, mind, remove_f):
-        resc = page.MainPage(mind)
-        # mind.avatar = resc
         def logout():
             resc.logout()
             remove_f()
-        return self.interface, resc, logout
+        return self.interface, mind.page(mind), logout
 

@@ -18,16 +18,38 @@
 Admin Web Mind
 """
 
+from os.path import join
 
-class NevowAdminMind(object):
-    
+from nevow import loaders
+from nevow import rend
+from nevow import tags as T
+from nevow import liveevil
+from nevow import inevow
+from nevow import guard
+from nevow import url
+from nevow import static
+
+from codehack import paths
+
+from mind import NevowMind
+import page
+
+class NevowAdminMind(NevowMind):
+
     def __init__(self, mind, avatar):
-        self.mind = mind
-        self.avatar = avatar
-
-    def init(self):
-        pass
+        NevowMind.__init__(self, mind, avatar, AdminPage)
         
+    def init(self):
+        NevowMind.init(self)
+        result = self.avatar.perspective_getInformation()
+        self.isrunning = result['duration'] is not None
+        self.name = result['name']
+        if self.isrunning:
+            self.duration = result['duration']
+            self.age = result['age']
+        else:
+            self.duration = self.age = 'Contest is not running'
+    
     def info(self, msg):
         """Message from server"""
         pass
@@ -44,3 +66,16 @@ class NevowAdminMind(object):
         pass
         # self.gui.contestStarted()
         
+class AdminPage(page.MainPage):
+
+    addSlash = True
+    docFactory = loaders.xmlfile(
+        join(paths.WEB_DIR, 'admin.html'))
+
+    cssDirectory = 'styles'
+    jsDirectory = 'js'
+
+    def __init__(self,mind):
+        self.mind = mind
+        self.avatar = mind.avatar
+        self.status = '' # status messages

@@ -88,6 +88,7 @@ class CodehackRealm:
         # It is *guaranteed* the Mind will be created after Avatar
         avatar = avatar_factory(mind, self.contest, 
                                 int(time.time()), id1, userid, emailid)
+        print '**', self.mind_adaptor[typ]
         mind = self.mind_adaptor[typ](mind, avatar)
         d = mind.init()
         def _mindInitialized(result):
