@@ -132,7 +132,7 @@ class JudgeAvatar(pb.Avatar):
     def waiting(self):
         return self.waiting_runs
         
-    def getSubmittionResult(self, problem, language, filename):
+    def getSubmissionResult(self, teamname, problem, language, filename):
         """Called when new submission is pending
         
         Return (defer) the submission result"""
@@ -143,6 +143,6 @@ class JudgeAvatar(pb.Avatar):
         # automate the evaluation process or use a human judge.  In any case
         # the result is deferred.
         self.waiting_runs = self.waiting_runs + 1
-        d = self.mind.submissionMade(problem, language, filename, filecontent)
+        d = self.mind.submissionMade(teamname, problem, language, filename, filecontent)
         self.waiting_runs = self.waiting_runs - 1
         return d

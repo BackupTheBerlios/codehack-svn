@@ -22,7 +22,9 @@ import time
 import gtk
 import gobject
 
-from codehack import paths, util
+from codehack import paths
+from codehack import util
+from codehack import console
 from codehack.gwidget import GWidget, autoconnect_signals_in_class
 from codehack.client import gui
 
@@ -35,8 +37,22 @@ class JudgeGUI(gui.ClientGUI):
         super(JudgeGUI, self).__init__(perspective, 'Judge', userid, disconnect)
         self.userid = userid
         self.info = {} # Contest info
+        self._runs = 0 # number of runs received
+        self._create_ui()
         self._update_ui(False)
         self._initialize()
+        
+    def submissionMade(self, teamname, problem, language, filename, filecontent):
+        self._runs = self._runs + 1
+        msg = 'Run %d: [%s] %d/%s' % (self._runs, teamname, problem, 
+                                      language)
+        self.console.write(msg)
+        
+
+    def _create_ui(self):
+        # Log console, to which messages will be printed
+        self.console = console.TextViewConsole(self['tv_log'])
+        self.console.write('Client start')
 
     def updateInfo(self, name, details):
         "Update self.info from contest details dict"

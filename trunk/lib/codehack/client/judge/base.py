@@ -34,6 +34,9 @@ class Mind(object):
     def __init__(self, ui):
         self.ui = ui
         
+    def remote_submissionMade(self, teamname, problem, language, filename, filecontent):
+        self.ui.submissionMade(teamname, problem, language, filename, filecontent)
+        
     def remote_info(self, msg):
         """Message from server"""
         print '**Message:', msg

@@ -50,7 +50,7 @@ class DefaultMindAdaptor(object):
 
     def __getattr__(self, attr):
         def proxy(*args, **kwargs):
-            self.mind.callRemote(attr, *args, **kwargs)
+            return self.mind.callRemote(attr, *args, **kwargs)
         return proxy
 
 # twisted.cred Authorization framework

@@ -27,7 +27,6 @@ from twisted.python import components
 from codehack.util import log
 from codehack.server import db
 
-
 class TeamAvatar(pb.Avatar):
 
     def __init__(self, mind, contest, loginat, id, userid, emailid,
@@ -150,9 +149,11 @@ class TeamAvatar(pb.Avatar):
             'in': os.path.splitext(os.path.split(filepath)[1])[0]
         }
 
-        reactor.callLater(0,self.profile.submitMeta,
-                          self, input_dict, problem_no, problem_lang,
-                          ts, workdir)
+        self.contest.sm.submit(
+            self, problem_no, problem_lang, ts, filepath)
+        #reactor.callLater(0,self.profile.submitMeta,
+        #                  self, input_dict, problem_no, problem_lang,
+        #                  ts, workdir)
         return True
         
 # -------------------------------------------------------------------------- #

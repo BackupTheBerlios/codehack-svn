@@ -24,7 +24,7 @@ from twisted.python import log
 # TODO: change all references to log.info to log.msg
 #       and then remove this hack
 log.info = log.msg
-
+log.warn = log.err
 
 APP_NAME = 'codehack'
 

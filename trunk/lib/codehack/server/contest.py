@@ -30,6 +30,7 @@ from codehack.util import log
 from codehack.evt import EventManager
 from codehack.server.db import SqliteDBProxy
 from codehack.server.db import USER_ADMIN, USER_TEAM
+from codehack.server.submission import SubmissionManager
 
 from avatar.team import TeamAvatar
 
@@ -168,6 +169,7 @@ class Contest(object):
             raise "No such contest '%s' exists - %s not found" % \
                 (self.name, self.directory)
         self.dbproxy = SqliteDBProxy(self.dbpath)
+        self.sm = SubmissionManager(self)
         if not resume:
             self.dbproxy.clear_submissions_sync()
 
