@@ -10,6 +10,7 @@ Bugs
     * TeamClient - Labels inside ProblemPanel doesn't change on .set_text
                    also ScrolledWindow warning is new in pygtk-2.4 
                    side-effect?
+    * AdminClient - Disconnect raises exception server
 
 ISSUES to be solved
 ===================

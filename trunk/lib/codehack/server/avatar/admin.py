@@ -61,7 +61,21 @@ class AdminAvatar(pb.Avatar):
         This method is guaranteed to be called *immediately* after
         creating the Avatar object"""
         self.mind = mind
+        self.registration_ids = []
+        # Register listeners
+        la = self.contest.liveavatars
+        for evt in (la.EVT_LOGIN, la.EVT_LOGOUT):
+            regid = la.registerListener(evt, 
+                lambda avatar: self.liveClientsChanged())
+            self.registration_ids.append(regid)
             
+    def logout(self):
+        """Called when this avatar logouts"""
+        # UnRegister listeners
+        la = self.contest.liveavatars
+        for regid in self.registration_ids:
+            la.unregisterListener(regid)
+        
     def connectionAge(self):
         "Return the duration in seconds when avatar is logged in"
         return int(time.time()-self.loginat)

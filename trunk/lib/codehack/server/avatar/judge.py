@@ -14,21 +14,14 @@
 # along with this program; if not, write to the Free Software 
 # Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-"""Team Avatar"""
+"""Judge Avatar"""
 
-import os
-import os.path
-import time
-
-from twisted.internet import defer, reactor
 from twisted.spread import pb
-from twisted.python import components
 
 from codehack.util import log
-from codehack.server import db
 
 
-class TeamAvatar(pb.Avatar):
+class JudgeAvatar(pb.Avatar):
 
     def __init__(self, mind, contest, loginat, id, userid, emailid,
                  webclient=False):
@@ -40,9 +33,9 @@ class TeamAvatar(pb.Avatar):
         @param Userid:  User id
         @param emailid: emailid of the user
         """
-        log.debug('TeamAvatar created - %s' % id)
+        log.debug('JudgeAvatar created - %s' % id)
         self.mind = None # see self.ready()
-        self.whoami = 'team'
+        self.whoami = 'judge'
         self.id = id
         self.loginat = loginat
         self.userid = userid
@@ -53,11 +46,10 @@ class TeamAvatar(pb.Avatar):
         self.dbproxy = contest.dbproxy
         self.notify_defer = None  # whether client is waiting
         self.contest_started = False
-        self._last_submitted_ts = -1  # Timestamp of last submitted problem
-                                      # Used to avoid duplicate timestamps
+        self.waiting_runs = 0 # number of waiting runs
 
     def ready(self, mind):
-        """Called when avatar is ready for operation.  Untill this
+        """Called when avatar is ready for operation.  Until this
         avatar should wait for anything.
 
         This method is guaranteed to be called *immediately* after
@@ -75,9 +67,6 @@ class TeamAvatar(pb.Avatar):
         
 # -------------------------------------------------------------------------- #
 #   1. getInformation:                          dict
-#   2. getSubmissions:                          list
-#   3. changePasswd(newpasswd):                 True/False
-#   4. submitProblem(pno,ptext,plang):          True
 # -------------------------------------------------------------------------- #
 
     def perspective_getInformation(self):
@@ -85,7 +74,7 @@ class TeamAvatar(pb.Avatar):
         
         Contest is not running of isrunning is False
         If contest is running, details will be a dict of
-        (duration, age, problems, languages, results, result_acc_index)
+        (duration, age)
         """
         isrunning = self.contest.isrunning()
         return {
@@ -94,20 +83,6 @@ class TeamAvatar(pb.Avatar):
             'details': self._contestDetails()
         }
         
-    def perspective_getSubmissions(self):
-        """Return all submissions by user"""
-        def _cbGotSubmissions(submissions):
-            subs_full = [] # List of (timestamp, problem_no, result)
-            for problem_subs in submissions:
-                if problem_subs:
-                    for prob, lang, ts, result in problem_subs:
-                        subs_full.append((ts, prob, lang, result))
-            subs_full.sort()
-            return subs_full
-        defer = self.profile.getSubmissions(self.id)
-        defer.addCallback(_cbGotSubmissions)
-        return defer
-
     def perspective_whoami(self):
         """Return the string representing this avatar,
         which could be one of the following.
@@ -125,35 +100,6 @@ class TeamAvatar(pb.Avatar):
         """Change the password"""
         d = self.dbproxy.update_user(self.id, password=newpasswd)
         return d.addCallbacks(lambda _: True, lambda _:False)
-
-    def perspective_submitProblem(self, problem_no, problem_text,
-                                         problem_lang):
-        """Submit a problem"""
-        if not self.contest_started:
-            return None
-        ts = self.contest.getContestAge()
-        # If this submission was in the same second as before ..
-        if ts == self._last_submitted_ts:
-            ts = ts + 1  # add one second to make timestamps unique!
-        self._last_submitted_ts = ts
-
-        log.debug('SUBMIT: %d - %s' % (problem_no, problem_lang) )
-
-        # FIXME: renaming doesn't work for Java programs !!
-        filename = 'p%d.%s' % (problem_no, \
-                    self.profile.getLanguages()[problem_lang][2][0])
-        filepath = self.contest.copyFile(
-                self, ts, filename, problem_text)
-        workdir = os.path.split(filepath)[0]
-        input_dict = {
-            'inpath': filepath,
-            'in': os.path.splitext(os.path.split(filepath)[1])[0]
-        }
-
-        reactor.callLater(0,self.profile.submitMeta,
-                          self, input_dict, problem_no, problem_lang,
-                          ts, workdir)
-        return True
         
 # -------------------------------------------------------------------------- #
 
@@ -161,24 +107,12 @@ class TeamAvatar(pb.Avatar):
         """Return the details dict.
         Note: Contest need not be started
         """
-        cp = self.contest.profile
-        problems = cp.getProblems()
-        results = cp.getResults()
-        languages_ex = cp.getLanguages()
-        languages = {}
-        for key, (ign, ign, exts) in languages_ex.items():
-            languages[key] = exts
-        result_acc_index = cp.getACCResult()
         age = -1
         if self.contest.isrunning():
             age = self.contest.getContestAge()
         details = {
             'duration': self.contest.duration,
             'age': age,
-            'problems': problems,
-            'languages': languages,
-            'results': results,
-            'result_acc_index': result_acc_index
         }
         return details
 
@@ -194,3 +128,21 @@ class TeamAvatar(pb.Avatar):
         self.contest_started = False
         # notify client
         self.mind.contestStopped()
+
+    def waiting(self):
+        return self.waiting_runs
+        
+    def getSubmittionResult(self, problem, language, filename):
+        """Called when new submission is pending
+        
+        Return (defer) the submission result"""
+        filecontent = file(filename).read()
+        # Ask the judge client for evaluation
+        # of course, the primary server (this) cannot trust user submitted
+        # programs, so this is the job of judge client which could either
+        # automate the evaluation process or use a human judge.  In any case
+        # the result is deferred.
+        self.waiting_runs = self.waiting_runs + 1
+        d = self.mind.submissionMade(problem, language, filename, filecontent)
+        self.waiting_runs = self.waiting_runs - 1
+        return d

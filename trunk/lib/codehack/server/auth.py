@@ -28,7 +28,7 @@ from twisted.spread import pb
 from twisted.python import failure
 
 from codehack.util import log
-from codehack.server.avatar import team, admin
+from codehack.server.avatar import team, admin, judge
 from codehack.server import db
 
 
@@ -77,7 +77,7 @@ class CodehackRealm:
 
         typ_map = {
             db.USER_TEAM: team.TeamAvatar,
-            db.USER_JUDGE: None, #judge.JudgeAvatar,
+            db.USER_JUDGE: judge.JudgeAvatar,
             db.USER_ADMIN: admin.AdminAvatar
         }
         try:

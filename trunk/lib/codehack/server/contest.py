@@ -27,17 +27,24 @@ from twisted.internet import reactor
 
 from codehack import paths
 from codehack.util import log
+from codehack.evt import EventManager
 from codehack.server.db import SqliteDBProxy
 from codehack.server.db import USER_ADMIN, USER_TEAM
 
 from avatar.team import TeamAvatar
 
 
-class LiveAvatars(object):
+class LiveAvatars(EventManager):
     
     """Logged in Avatars"""
+
+    # Event Types
+    EVT_LOGIN,\
+    EVT_LOGOUT,\
+    = range(2)
     
     def __init__(self):
+        EventManager.__init__(self, self.EVT_LOGIN, self.EVT_LOGOUT)
         self._avatars = {}
         
     def get(self, avatarId):
@@ -54,23 +61,28 @@ class LiveAvatars(object):
         "Called when an avatar logs in"
         log.debug('Avatar [%s] logs in' % avatarId)
         self._avatars[avatarId] = avatar
-        if self._avatars.has_key('admin'):
-            # Notify admin
-            self._avatars['admin'].liveClientsChanged()
+        self.post(self.EVT_LOGIN, avatar)
+        #if self._avatars.has_key('admin'):
+        #    # Notify admin
+        #    self._avatars['admin'].liveClientsChanged()
         
     def remove(self, avatarId):
         "Called when an avatar logs out"
         log.debug('Avatar [%s] logs out' % avatarId)
+        avatar = self._avatars[avatarId]
+        avatar.logout()
         del self._avatars[avatarId]
-        if self._avatars.has_key('admin'):
-            # Notify admin
-            self._avatars['admin'].liveClientsChanged()
+        self.post(self.EVT_LOGOUT, avatar)
+        #if self._avatars.has_key('admin'):
+        #    # Notify admin
+        #    self._avatars['admin'].liveClientsChanged()
     
     def disconnect(self, avatarId):
         "Disconnect an avatar"
         log.debug('Avatar [%s] will be disconnected' % avatarId)
         transport = self._avatars[avatarId].mind.broker.transport
         transport.loseConnection()
+
 
 class Contest(object):
     """The contest.
