@@ -18,6 +18,7 @@
 
 import time
 
+from twisted.application import service, internet
 from twisted.internet import reactor, defer
 from twisted.cred import checkers
 from twisted.cred import portal
@@ -134,3 +135,16 @@ def start_server(contest):
                 'Server Ready. Listening at port %d' % PORT)
     reactor.run()
     log.info('Reactor exited')
+
+def getApplication(contest, port, backlog=500):
+    "Return application that must be run"
+    app = service.Application('codehack')
+    realm = CodehackRealm(contest)
+    portal_ = portal.Portal(realm)
+    portal_.registerChecker(CodehackChecker(contest.dbproxy))
+    
+    coreservice = internet.TCPServer(port, pb.PBServerFactory(portal_), backlog)
+    coreservice.setServiceParent(app)
+    
+    return app
+

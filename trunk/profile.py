@@ -15,40 +15,54 @@
 # along with this program; if not, write to the Free Software 
 # Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-"""Test script to bootstrap"""
+"""Contest Profile"""
+
+# This is currently the only way to configure codehack to 
+# contest server
+#
+# First set the 'contest_name' variable to the contest name which was
+# used to create the contest (through ./codehack.py --newcontest).
+#
+# Second, implement the getProfileObject method which must return the 
+# profile object.  See codehack/server/profile for notes how to write a profile
+# A sample profile (sample.py) is provided for convinience.  sample profile
+# follows ACM ICPC rules.
 
 import sys
 from os.path import abspath, join
 import shutil
 
-# Code is kept in lib/
-sys.path.insert(0, abspath('lib'))
-
-# We import paths here, to initialize the PATH variables 
-# before the CWD is changed by some other part of code
-# see: constants.py in lib/
-from codehack import paths
-
 TEST_DIR = abspath('test')
+TST_JUDGE_DIR = abspath(join(TEST_DIR, 'icpc', 'judge'))
 
-TST_JUDGE_DIR = abspath(join('test', 'icpc', 'judge'))
+# Set the Contest name here
+# It will be used when starting the server through twistd (startserver.tac)
+contest_name = 'icpc'
 
-# server
-def do_s():
+# This function should return the Contest Profile instance
+# Write your code here
+# 
+# IMPORTANT: After first creating a contest, you may want to configure
+# it by hand before starting the server
+# For example, for SimpleCP profile, .in and .out files must be copied to
+# /judge sub-directory in contest directory
+# Sample .in and .out files are available in /test/judge
+def getProfileObject():
+    "Return the Contest Profile instance"
     from codehack.server.profile import samples
-    from codehack.server import contest
+    # We remove team's temporary files
     try:
-        shutil.rmtree(join(TEST_DIR, sys.argv[2], 'team'))
+        shutil.rmtree(join(TEST_DIR, contest_name, 'team'))
     except OSError:
         pass
-    cnt = contest.Contest(sys.argv[2], TEST_DIR)
-    cnt.open()
+    # The list of problem names
     problems = [
         'Simple addition',
         'Game tree',
         'Derangements',
         'Network Flow'
     ]   
+    # List of language definitions (name=>(compile, execute, list_of_ext))
     languages = {
         'C': ("PATH='/usr/bin/' gcc %(inpath)s -o %(in)s -lm", 
             './%(in)s', ['c']),
@@ -57,34 +71,10 @@ def do_s():
         'Python': (None, 'python %(inpath)s', ['py']),
         'Java': ('javac %(inpath)s', 'java %(in)s', ['java']),
     }
+    # ICPC Score penalty
     score_penalty = 20
+    # ACM ICPC Style contest profile
     cp = samples.SimpleCP(TST_JUDGE_DIR, problems, 
                     languages, score_penalty)
-    cnt.start_server(cp)
+    return cp
     
-# client
-def do_c():
-    from codehack import client
-    client.run()
-    
-# create contest (and repositories, ...)
-def do_newcontest():
-    contest_name = sys.argv[2]
-    from codehack.server import contest
-    from getpass import getpass
-    cnt = contest.Contest(contest_name, TEST_DIR)
-    print 'IMPORTANT: "admin" is the identity for the Admin account'
-    apass = None
-    while 1:
-        apass = getpass("admin's password: ")
-        apass2 = getpass("Re-enter password: ")
-        if apass == apass2:
-            break
-        print "Passwords doesn't match"
-    aemaild = raw_input("admin's email: ")
-    cnt.create(apass, aemaild)
-    print contest_name, 'created in', TEST_DIR
-    print 'Run "./run.py s %s" to start the server' % contest_name
-    
-
-locals()['do_'+sys.argv[1]]()

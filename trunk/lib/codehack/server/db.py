@@ -212,15 +212,15 @@ class DBProxy(object):
         @returns: list of IDs
         """
         query_str = 'SELECT * from %s' % table
+        set_value_list = []
         if tid is not None and len(tid) > 0:
             # Create list of where conditions
             set_list = []
-            set_value_list = []
             for ky, val in tid.items():
                 set_list.append(ky + ' = %s')
                 set_value_list.append(val)
-        if len(set_list) > 0:    
-            query_str = query_str + ' where '+ \
+            if len(set_list) > 0:    
+                query_str = query_str + ' where '+ \
                         ' AND '.join(set_list)
         d = self.runQuery(query_str, *set_value_list)
 
@@ -365,6 +365,7 @@ class SqliteDBProxy(DBProxy):
         """
         super(SqliteDBProxy, self).__init__()
         self.database = database
-        self.conn = adbapi.ConnectionPool(self.DB_MODULE, database=database)
+        self.conn = adbapi.ConnectionPool(
+            self.DB_MODULE, database=database, cp_min=1, cp_max=1)
 
 

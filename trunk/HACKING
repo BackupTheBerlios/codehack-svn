@@ -15,15 +15,16 @@ Brief architecture
 ------------------
 
 	* a new contest is created
-		$ ./run.py newcontest <contest_name>
+		$ ./codehack.py --newcontest <contest_name>
 	* server is started
-		$ ./run.py s <contest_name>
+	    : Set contest parameters in profile.py	(eg., 'contest_name' variable)
+        $ twisted -noy startserver.tac
 	* different types of users (clients)
 		- admin : who configures the contest
 		- judge : for now, he takes care of answering queries [1]
 		- team  : contest team
 	* client logins
-		$ ./run.py c
+		$ ./codehack.py -c
 
 Currently there will be an admin account
 	# userid: admin

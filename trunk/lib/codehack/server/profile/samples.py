@@ -253,8 +253,10 @@ class Evaluator(protocol.ProcessProtocol):
     def outReceived(self, data):
         # Compare `so-far-received` data
         correct_data = self.output.read(len(data))
+        correct_data = self.output.read(len(data))
         if data != correct_data:
             self.result = self.sh.RES_WA
+            self.done()
 
     def errReceived(self, data):
         # we skip stderr

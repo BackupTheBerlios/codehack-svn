@@ -114,6 +114,9 @@ class Contest(object):
         
         @param resume: Whether the contest must be resumed
         """
+        if not os.path.isdir(self.directory):
+            raise "No such contest '%s' exists - %s not found" % \
+                (self.name, self.directory)
         self.dbproxy = SqliteDBProxy(self.dbpath)
         if not resume:
             self.dbproxy.clear_submissions_sync()
@@ -132,7 +135,7 @@ class Contest(object):
         # DEBUG - start contest now
         self.start_contest(60*100)
         
-        gateway.start_server(self)
+        # gateway.start_server(self)
         # This point will never be reached, until the reactor quits
         # I don't know whether this (keeping in stack) is good thing to do
         # so FIXME: (the above)
