@@ -16,6 +16,12 @@
 
 """Submissions manager"""
 
+# FIXME: This module should not be used
+# Instead use the pc2 style of submission
+#  submit all runs to all judges
+#  let the judge (bot or human) select the runs after which that run
+#  disappear from other judges view.
+
 from twisted.internet import reactor
 from codehack.util import log
 
