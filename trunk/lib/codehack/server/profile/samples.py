@@ -14,8 +14,7 @@
 # along with this program; if not, write to the Free Software 
 # Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-"Sample ContestProfile's"
-
+"Sample ContestProfile's, possibly supposed to be used by default"
 
 import os.path
 from twisted.internet import defer
@@ -26,6 +25,7 @@ from twisted.internet import process
 # service is API to codehack for ContestProfile's
 from codehack.server import services, scoregen
 import base
+
 
 # ICPC scoring
 
@@ -51,6 +51,7 @@ class ScoreObject(object):
         return -1
 
     def __str__(self):
+        # TODO: more HTML specific rendering
         return 'solved: %d, score: %d' % (self.nr_acc, self.score)
 
 
@@ -67,7 +68,7 @@ class SimpleCP(base.AbstractContestProfile):
 
         - submissions: Evaluation based on matching of output with .out file
         - scores: ScoreObject is score, penalty is also supported
-                  (scoring will resemble ICPC scoring)
+                  (scoring will resemble ICPC (www.acmicpc.org) scoring)
 
     This profile can be sub-classed for more finer control
     """
@@ -118,8 +119,9 @@ class SimpleCP(base.AbstractContestProfile):
         #  but again, this is unused flexibility ;)
 
         # Resource limits
-        #  hmm, you may need to have a look at safeexec.py !
+        #  hmm, you may need to have a look at "safeexec.py" !
         #  This is list of resource arguments to be passed to safeexec.py
+        # XXX: Another UNIX dependency
         self.res_limits = [
             "RLIMIT_NOFILE=120,120",
         ]
@@ -145,9 +147,7 @@ class SimpleCP(base.AbstractContestProfile):
         return self.RES_ACC
 
     def calculateScore(self, team, submissions):
-                    
         score = ScoreObject()
-        assert submissions
         for pr in submissions:
             # was the problem ever submitted?
             if pr is None:
@@ -174,7 +174,7 @@ class SimpleCP(base.AbstractContestProfile):
         #  Also in such case, submit() must return defer.Deferred instance
         #   and the last Followon method will just .callback the result
         #   on this deferred object to simulate the real return
-        # What an ugly part.  Probably you can use defgen.py from twisted svn
+        # What an ugly part.  Probably one can use defgen.py from twisted svn
         # to make this more pretty!
 
         cmd_compile, cmd_exe = self.languages[language][:2]
@@ -194,6 +194,7 @@ class SimpleCP(base.AbstractContestProfile):
                                cmd_compile % input_dict, 
                                workdir, self.res_limits)
         else:
+            # No compilation, so no waiting, directly call the followon
             self._followon_compiled(0, data)
 
         # Followon will take care, just return from method 
@@ -204,7 +205,7 @@ class SimpleCP(base.AbstractContestProfile):
     #  Each followon method will result argument, but don't bother
     def _followon_compiled(self, result, data):
         # Now the program is compiled
-        #  result contains the return code (surprisingly
+        #  result contains the return code (surprisingly)
         
         # Compilation error?
         if result != 0:
@@ -214,7 +215,8 @@ class SimpleCP(base.AbstractContestProfile):
         # Proceed with execution
         infile = os.path.join(self.judge_data_dir, 'p%d.in' % data['problem'])
         outfile = os.path.join(self.judge_data_dir, 'p%d.out' % data['problem'])
-        # See class Evaluator below
+        
+        # See class Evaluator (judges the program output) below
         pp = Evaluator(self, data['result_defer'], infile, outfile)
         services.safe_spawn(pp, data['cmd_exe'] % data['input_dict'], 
                           data['workdir'], self.res_limits)
@@ -222,6 +224,7 @@ class SimpleCP(base.AbstractContestProfile):
         return data['result_defer']
 
     def _followon_executed(self, result, data):
+        # Finally return the result, *phew*
         return result
 
 
@@ -232,6 +235,9 @@ class Evaluator(protocol.ProcessProtocol):
     
     """Evaluator for SimpleCP. Does a straightforward comparison
     of program output with outfile
+    
+    Note: This does char-to-char compare, no striping of whitespace happends
+    anywhere.
     """
         
     def __init__(self, sh, defer, infile, outfile):

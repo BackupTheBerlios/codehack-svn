@@ -33,12 +33,13 @@ class AbstractContestProfile(object):
         """
         self.scoregens = scoregens
 
-        # The Contest object
+        # The Contest object (set by setContest(), immediately after construction)
         self.contest = None
 
         # We maintain a score cache (userid=>score object)
+        # and update the same
         self.score_cache = {}
-        self.score_cache_touched = True  # If score cache is touched
+        self.score_cache_touched = True  # If score cache is modified
 
     def setContest(self, contest):
         self.contest = contest
@@ -56,7 +57,7 @@ class AbstractContestProfile(object):
                           ['java']),
             }
 
-        List of 'standard' keywords in command string substitution:
+        List of 'standard' keywords in "command string" substitution:
             1. inpath - Path to source file
             2. in - Name of source file without extension and path
         """
@@ -70,7 +71,7 @@ class AbstractContestProfile(object):
         """Handler for submissions.
 
         team - Team avatar class (see TeamAvatar.__doc__ for more info)
-        input_dict - Dict of 'standard' keywords used in cmd string subst.
+        input_dict - Dict of 'standard' keywords used in "command string".
         problem - Index into problems list
         language - Index into languages list
         timestamp - Timestamp of submission
@@ -92,7 +93,7 @@ class AbstractContestProfile(object):
         except KeyError:
             pass
         else:
-            # If not change in score ..
+            # If no change in score ..
             if oldscore == score:
                 return
         self.score_cache[team.userid] = score
@@ -103,7 +104,9 @@ class AbstractContestProfile(object):
         if self.score_cache_touched is False:
             return None  # already upto date
         def done(fullstats):
+            # Pass updated score information to all ScoreGenerators
             for scoregen in self.scoregens:
+                # As you can observe, _all_ scoregen's get same arguments
                 scoregen.generate(self.contest.dirs['stat'],
                                 self.contest.name,
                                     self.score_cache, fullstats)
@@ -157,7 +160,7 @@ class AbstractContestProfile(object):
             
 
         def followon3(dbresult, result, score_object, sid):
-            "Return the result and score"
+            "Return the result and score to profile client (submit() caller)"
             dct = {}
             for ky in ('problem', 'ts', 'result', 'language'):
                 dct[ky] = sid[ky]
@@ -166,7 +169,7 @@ class AbstractContestProfile(object):
 
         result = self.submit(team, input_dict, problem, language,
                              timestamp, workdir)
-        # self.submit *may* return a Deferred
+        # XXX: self.submit *may* return a Deferred
         #  In future, self.submit's responsbility may be simplified
         if isinstance(result, defer.Deferred):
             result.addCallback(followon1)
@@ -193,10 +196,6 @@ class AbstractContestProfile(object):
             for pr in returnobject:
                 if pr:
                     # We sort submissions by `id`
-                    # *not* ts (timestamp), as a team 
-                    # could submit (programatically) 2 times 
-                    # within the same second
-                    # In final return, we return the `id`
                     pr.sort()
                     pr = [(prb,lang,ts,res) for id1,prb,lang,ts,res in pr]
                 sorted.append(pr)
