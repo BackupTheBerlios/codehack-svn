@@ -19,8 +19,18 @@ Codehack Nevow Mind
 """
 
 from jsutil import JSUtil
-    
+
+
 class NevowMind:
+
+    """Mind wrapper for Nevow clients.
+
+    mind - original mind
+    avatar - avatar for this mind
+    page - The corresponding page *class*
+
+    see: auth.py for mechanism
+    """
 
     def __init__(self, mind, avatar, page):
         self.mind = mind

@@ -33,15 +33,19 @@ from codehack import paths
 
 from mind import NevowMind
 import page
+import msg
 
 
 class StaticItemStore:
 
+    "Static getter: self['whatever'] will always return self.value"
+    
     def __init__(self, value):
         self.value = value
 
     def __getitem__(self, item):
         return self.value
+
 
 class NevowTeamMind(NevowMind):
 
@@ -103,38 +107,43 @@ class NevowTeamMind(NevowMind):
 
     def submitProgram(self, filename, filecontent):
         if not self.isrunning:
-            return 'Contest is not running. You cannot upload file.'
-        if not '.' in filename:
-            return 'Filename should have an extension'
-        splits = filename.split('.')
-        if len(splits) != 2:
-            return 'Invalid fileame. Cannot contain multiple . character'
-        progname, ext = filename.split('.')
+            return msg.CNT_NOT_RUNNING
+
+        class InvalidFilename(ValueError):
+            "Invalid filename sent"
+
         try:
-            no = int(progname[1:])
-        except ValueError:
-            return 'Filename should have problem number'
-        if no < 0 or no>=len(self.problems):
-            return 'Filename should have problem number in range %d to %d' \
-                   % (0, len(self.problems-1))
-        for lang, extensions in self.languages.items():
-            if ext in extensions:
-                break
-        else:
-            return 'No supported language accepts this file. Check your ' + \
-                   'file extension'
+            if not '.' in filename:
+                raise InvalidFilename
+            splits = filename.split('.')
+            if len(splits) != 2:
+                raise InvalidFilename
+            progname, ext = filename.split('.')
+            try:
+                no = int(progname[1:])
+            except ValueError:
+                raise InvalidFilename
+            if no < 0 or no>=len(self.problems):
+                raise InvalidFilename
+            for lang, extensions in self.languages.items():
+                if ext in extensions:
+                    break
+            else:
+                return msg.FN_INVALID_EXT
+        except InvalidFilename:
+            return msg.FN_INVALID
         # no, lang
         status = self.avatar.perspective_submitProblem(no, filecontent, lang)
         if status is None:
             return 'Problem in submission. Try again'
-        return True
+        return msg.FN_OK
     
     # Mind methods
     #
         
     def info(self, msg):
         """Message from server"""
-        self.mind.flt('info', msg)
+        self.mind.set('info', msg)
 
     def submissionResult(self, result):
         return self.update_submissions().addCallback(lambda _: self._sendRuns())
@@ -170,13 +179,9 @@ class TeamPage(page.MainPage):
             fields = inevow.IRequest(ctx).fields
             filecontent = fields.getvalue('source')
             filename = fields['source'].filename
-            status = self.mind.submitProgram(filename, filecontent)
-            if status is True:
-                self.status = 'Successfully submitted'
-            else:
-                self.status = status
-            
+            self.status = self.mind.submitProgram(filename, filecontent)
             return url.URL.fromRequest(inevow.IRequest(ctx)), ()
+        
         return rend.Page.locateChild(self, ctx, segments)
 
     def render_runs(self, ctx, data):

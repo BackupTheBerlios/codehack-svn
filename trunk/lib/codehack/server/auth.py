@@ -86,10 +86,19 @@ class CodehackRealm:
 
         # Create the avatar and mind
         # It is *guaranteed* the Mind will be created after Avatar
+
+        # well, here the avatar is not fully created
+        #  only the .ready methods ensures it
+        #  'mind' will passed to the .ready method
         avatar = avatar_factory(mind, self.contest, 
                                 int(time.time()), id1, userid, emailid)
+
+        # create the mind adaptor suitable for avatar
+        # and initialize it
+        # mind.init is special as it is called only *once* (i.e. here)
         mind = self.mind_adaptor[typ](mind, avatar)
         d = mind.init()
+        
         def _mindInitialized(result):
             # Now initialize avatar
             avatar.ready(mind)
@@ -103,11 +112,14 @@ class CodehackRealm:
         if d is None:
             return _mindInitialized(None)
         return d.addCallback(_mindInitialized)
-    
+
+    # see web.base for sample implementation of these methods
     def requestAnonymousAvatar(self, mind):
-        raise NotImplementedError("Anonymous login not allowed")
+        "Return the iface, avatar, logoutcb for mind"
+        raise NotImplementedError("Authentication required")
         
     def requestThisAvatar(self, avatarId, mind, remove_f):
+        "Return the iface, avatar, logoutcb for mind and avatarId"
         raise NotImplementedError("<Base class>")
         
 
