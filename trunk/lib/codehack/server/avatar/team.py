@@ -59,6 +59,13 @@ class TeamAvatar(pb.Avatar):
     def connectionAge(self):
         "Return the duration in seconds when avatar is logged in"
         return int(time.time()-self.loginat)
+        
+# -------------------------------------------------------------------------- #
+#   1. getInformation:                          dict
+#   2. getSubmissions:                          list
+#   3. changePasswd(newpasswd):                 True/False
+#   4. submitProblem(pno,ptext,plang):          True
+# -------------------------------------------------------------------------- #
 
     def perspective_getInformation(self):
         """Return dict of isrunning, name, details.
@@ -87,6 +94,55 @@ class TeamAvatar(pb.Avatar):
         defer = self.profile.getSubmissions(self.id)
         defer.addCallback(_cbGotSubmissions)
         return defer
+
+    def perspective_whoami(self):
+        """Return the string representing this avatar,
+        which could be one of the following.
+        1. team
+        2. judge
+        3. admin
+        """
+        return self.whoami
+    
+    def perspective_echo(self, obj):
+        """Test method that echoes back the object"""
+        return obj
+
+    def perspective_changePasswd(self, newpasswd):
+        """Change the password"""
+        d = self.dbproxy.update_user(self.id, password=newpasswd)
+        return d.addCallbacks(lambda _: True, lambda _:False)
+
+    def perspective_submitProblem(self, problem_no, problem_text,
+                                         problem_lang):
+        """Submit a problem"""
+        if not self.contest_started:
+            return None
+        ts = self.contest.getContestAge()
+        # If this submission was in the same second as before ..
+        if ts == self._last_submitted_ts:
+            ts = ts + 1  # add one second to make timestamps unique!
+        self._last_submitted_ts = ts
+
+        log.debug('SUBMIT: %d - %s' % (problem_no, problem_lang) )
+
+        # FIXME: renaming doesn't work for Java programs !!
+        filename = 'p%d.%s' % (problem_no, \
+                    self.profile.getLanguages()[problem_lang][2][0])
+        filepath = self.contest.copyFile(
+                self, ts, filename, problem_text)
+        workdir = os.path.split(filepath)[0]
+        input_dict = {
+            'inpath': filepath,
+            'in': os.path.splitext(os.path.split(filepath)[1])[0]
+        }
+
+        reactor.callLater(0,self.profile.submitMeta,
+                          self, input_dict, problem_no, problem_lang,
+                          ts, workdir)
+        return True
+        
+# -------------------------------------------------------------------------- #
 
     def _contestDetails(self):
         "Returns details dict"
@@ -120,51 +176,3 @@ class TeamAvatar(pb.Avatar):
         self.contest_started = False
         # notify client
         self.mind.callRemote('contestStopped')
-        
-    def perspective_whoami(self):
-        """Return the string representing this avatar,
-        which could be one of the following.
-        1. team
-        2. judge
-        3. admin
-        """
-        return self.whoami
-    
-    def perspective_echo(self, obj):
-        """Test method that echoes back the object"""
-        return obj
-
-    def perspective_changePasswd(self, newpasswd):
-        """Change the password"""
-        d = self.dbproxy.update_user(self.id, password=newpasswd)
-        d.addCallbacks(lambda _: True, lambda _:False)
-        return d
-
-    def perspective_submitProblem(self, problem_no, problem_text,
-                                         problem_lang):
-        """Submit a problem"""
-        if not self.contest_started:
-            return None
-        ts = self.contest.getContestAge()
-        # If this submission was in the same second as before ..
-        if ts == self._last_submitted_ts:
-            ts = ts + 1  # add one second to make timestamps unique!
-        self._last_submitted_ts = ts
-
-        log.debug('SUBMIT: %d - %s' % (problem_no, problem_lang) )
-
-        # FIXME: renaming doesn't work for Java programs !!
-        filename = 'p%d.%s' % (problem_no, \
-                    self.profile.getLanguages()[problem_lang][2][0])
-        filepath = self.contest.copyFile(
-                self, ts, filename, problem_text)
-        workdir = os.path.split(filepath)[0]
-        input_dict = {
-            'inpath': filepath,
-            'in': os.path.splitext(os.path.split(filepath)[1])[0]
-        }
-
-        reactor.callLater(0,self.profile.submitMeta,
-                          self, input_dict, problem_no, problem_lang,
-                          ts, workdir)
-        return True

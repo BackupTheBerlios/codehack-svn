@@ -57,14 +57,21 @@ class AdminAvatar(pb.Avatar):
     def connectionAge(self):
         "Return the duration in seconds when avatar is logged in"
         return int(time.time()-self.loginat)
+        
+# -------------------------------------------------------------------------- #
+#   1. startContest(duration):              getInformation()
+#   2. stopContest():
+#   3. disconnectClient(avatarId):
+#   4. getLiveClients():                    dict
+#   5. getInformation():                    dict
+#
+#   1. users_get_all:                       dict
+#   2. users_get(user):
+#   3. users_add(uid):
+#   4. users_update(uid):
+#   5. users_remove(users):
+# -------------------------------------------------------------------------- #
 
-    def contestStarted(self):
-        pass
-    
-    def contestStopped(self):
-        "Callback on contest stop"
-        self.mind.callRemote('contestStopped')
-    
     def perspective_whoami(self):
         """Return the string representing this avatar,
         which could be one of the following.
@@ -84,11 +91,6 @@ class AdminAvatar(pb.Avatar):
 
     def perspective_stopContest(self):
         self.contest.stopContest()
-
-    def liveClientsChanged(self):
-        "Notification when a client logs-in/logs-out"
-        self.mind.callRemote('liveClients', 
-                        self.perspective_getLiveClients())
 
     def perspective_disconnectClient(self, avatarId):
         "Disconnect a client"
@@ -216,6 +218,8 @@ class AdminAvatar(pb.Avatar):
         """
         return self._tmpl_remove(self.dbproxy.users_remove, users)
         
+# -------------------------------------------------------------------------- #
+        
     # client pass string value to key `type`, we convert it into 
     # number used by database
     def _update_user_dict(self, uid, db_filter=db.get_type_id):
@@ -226,3 +230,15 @@ class AdminAvatar(pb.Avatar):
         except KeyError,o:
             raise RuntimeException, "Invalid user type passed - " + str(o)
         uid['type'] = typ_id
+
+    def contestStarted(self):
+        pass
+    
+    def contestStopped(self):
+        "Callback on contest stop"
+        self.mind.callRemote('contestStopped')
+    
+    def liveClientsChanged(self):
+        "Notification when a client logs-in/logs-out"
+        self.mind.callRemote('liveClients', 
+                        self.perspective_getLiveClients())
