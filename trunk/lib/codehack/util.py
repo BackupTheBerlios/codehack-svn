@@ -101,7 +101,3 @@ def getReason(error):
         return error['error_reason']
     return None
 
-#~ class OperationError(pb.Error):
-    #~ """Operation failed
-    
-    #~ This exception is raised by server pb and caught by client"""

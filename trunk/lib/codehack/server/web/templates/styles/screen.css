@@ -118,6 +118,8 @@ p {
 
 .status {
   background-color: cyan;
+  border: 1px solid yello;
+  margin: 10px 200px 10px 200px;
 }
 
 

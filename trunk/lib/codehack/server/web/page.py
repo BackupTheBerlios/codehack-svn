@@ -114,11 +114,8 @@ class MainPage(rend.Page):
                            defaultType="text/css")
     child_js = static.File(web_file(jsDirectory),
                            defaultType="text/javascript")
+    child_liveevil = liveevil.glueJS
     
-    # The glue
-    render_glue = liveevil.glue
-    render_codehack_glue = T.inlineJS(
-        file(web_file('js', 'codehack.js')).read())
 
     def __init__(self, *args, **kwargs):
         super(MainPage, self).__init__(*args, **kwargs)
