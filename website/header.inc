@@ -39,7 +39,7 @@
       <div class="subHeader">
         <span class="doNotDisplay">Navigation: </span>
         <a href="./index.html">Home</a> |
-        <a href="./index.html">Screenshots</a> |
+        <a href="./screenshots.shtml">Screenshots</a> |
         <a href="./index.html">Documentation</a> |
         <a href="mailto:sridhar@users.berlios.de">Contact</a>
       </div>

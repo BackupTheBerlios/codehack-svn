@@ -1,0 +1,33 @@
+<!--#include virtual="header.inc" -->   
+
+ <div id="main-copy">
+      <h1 style="border-top: none; padding-top: 0;">Screenshots</h1>
+      <p>These are development screenshots</p>
+
+      <h1>Client</h1>
+      <p>
+        <h2>Login window</h2>
+        <img src="images/sshots/login.png" />
+        
+        <h2>2. Admin: Account management</h2>
+        <img src="images/sshots/admin-accounts.png" />
+
+        <h2>3. Admin: Contest management</h2>
+        <img src="images/sshots/admin-contest.png" />
+
+        <h2>4. Admin: Logged in users management</h2>
+        <img src="images/sshots/admin-loggedin.png" />
+
+        <h2>5 Team: Problems</h2>
+        <img src="images/sshots/team-problems.png" />
+
+        <h2>6. Team: Runs aka. Submissions</h2>
+        <img src="images/sshots/team-runs.png" />
+        
+      </p>
+
+      <h2>Web Client</h2>
+      <p>Coming soon ...</p>
+ </div>
+
+<!--#include virtual="footer.inc" --> 
