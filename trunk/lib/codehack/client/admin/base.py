@@ -14,21 +14,35 @@
 # along with this program; if not, write to the Free Software 
 # Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-"""Job runner
+"""Admin GUI"""
 
-Executes programs using Deferreds
-"""
+from gtkui import AdminGUI
+
+# Startup function
+def run(perspective, mind_proxy, userid, disconnect):
+    gui = AdminGUI(perspective, userid, disconnect)
+    mind = Mind(gui)
+    mind_proxy.setTarget(mind)
+    gui.show()
 
 
-class Runner(object):
-    """Runs programs returning deferreds"""
+class Mind(object):
+    """Mind object sent to twisted.cred in server
     
-    def __init__(self, cmd_line):
-        """
-        @param cmd_line: The command line to execute
-        """
-        self.cmd_line = cmd_line
-        self.shell_cmd_line = 'sh -c "%s"' % cmd_line.replace('"', '\"')
+    Server calls methods in this class"""
+    
+    def __init__(self, gui):
+        self.gui = gui
         
-    def run(self):
-        """Start executing"""
+    def info(self, msg):
+        """Message from server"""
+        print '**Message:', msg
+
+    def remote_liveClients(self, clients):
+        self.gui.gotLoggedClients(clients)
+
+    def remote_contestStopped(self):
+        self.gui.contestStopped()
+
+    def remote_contestStarted(self):
+        self.gui.contestStarted()

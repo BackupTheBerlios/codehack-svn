@@ -80,12 +80,12 @@ class AdminGUI(gui.ClientGUI):
         self.db_users.populate()
         # Get contest time, duration ...
         def done(result):
-            name, duration, age = result
-            self._update_contest_ui(name, duration, age)
+            self._update_contest_ui(
+                result['name'], result['duration'], result['age'])
             self.call_remote('Getting logged in clients information', 
-                         self.gotLoggedClients, 'get_clients')
+                         self.gotLoggedClients, 'getLiveClients')
         self.call_remote('Getting contest information', done, 
-                         'get_contest_info')
+                         'getInformation')
     
     def gotLoggedClients(self, result):
         assert result
@@ -94,7 +94,7 @@ class AdminGUI(gui.ClientGUI):
             self.clients[userid] = (typ, duration, time.time())
         self._update_clients_ui()
 
-    def contest_stopped(self):
+    def contestStopped(self):
         "Called by mind on stop of contest"
         self._update_contest_ui(None, None, 0)
         
@@ -127,9 +127,9 @@ class AdminGUI(gui.ClientGUI):
         """Updates UI based on contest info, duration is None if contest
         is not running"""
         if duration:
-            self.contest_time(time.time()-age, duration)
+            self.contestTime(time.time()-age, duration)
         else:
-            self.contest_time(0, None)
+            self.contestTime(0, None)
         self['lbl_contest'].set_markup(
                 self.LBL_CONTEST_INFO % (not duration and 'NOT ' or ''))
         if name:
@@ -157,15 +157,15 @@ class AdminGUI(gui.ClientGUI):
             self['ent_duration'].set_text('')
             return
         def done(result):
-            name, duration, age = result
             # Start time
-            self._update_contest_ui(name, duration, age)
-        self.call_remote('Starting contest', done, 'start_contest', duration)
+            self._update_contest_ui(
+                result['name'], result['duration'], result['age'])
+        self.call_remote('Starting contest', done, 'startContest', duration)
 
     def on_but_stop_contest__clicked(self, but, *args):
         def done(result):
             self._update_contest_ui(None, None, 0)
-        self.call_remote('Stopping contest', done, 'stop_contest')
+        self.call_remote('Stopping contest', done, 'stopContest')
 
     def on_but_logout__clicked(self, *args):
         self.on_quit()
@@ -174,5 +174,4 @@ class AdminGUI(gui.ClientGUI):
     def on_but_disconnect_client__clicked(self, *args):
         userid = self._get_selected_client()
         self.call_remote('Disconnecting %s' % userid, None, 
-                'disconnect_client', userid)
-        
+                'disconnectClient', userid)

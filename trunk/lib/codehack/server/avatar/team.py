@@ -56,27 +56,27 @@ class TeamAvatar(pb.Avatar):
         if contest.isrunning():
             self.contestStarted()
 
-    def get_connection_age(self):
+    def connectionAge(self):
         "Return the duration in seconds when avatar is logged in"
         return int(time.time()-self.loginat)
 
-    def perspective_get_contest_info(self):
-        """Returns isrunning, name, details tuple.
+    def perspective_getInformation(self):
+        """Return dict of isrunning, name, details.
         
         Contest is not running of isrunning is False
-        If contest is running, details will be a tuple of
-        (duration, contestage, problems, languages, results, result_acc_index)
+        If contest is running, details will be a dict of
+        (duration, age, problems, languages, results, result_acc_index)
         """
         isrunning = self.contest.isrunning()
-        name = self.contest.name
-        details = None
-        if isrunning:
-            details = self._contest_details()
-        return isrunning, name, details
+        return {
+            'isrunning': isrunning,
+            'name': self.contest.name,
+            'details': isrunning and self._contestDetails() or None
+        }
         
-    def perspective_get_submissions(self):
+    def perspective_getSubmissions(self):
         """Return all submissions by user"""
-        def done(submissions):
+        def _cbGotSubmissions(submissions):
             subs_full = [] # List of (timestamp, problem_no, result)
             for problem_subs in submissions:
                 if problem_subs:
@@ -84,12 +84,12 @@ class TeamAvatar(pb.Avatar):
                         subs_full.append((ts, prob, lang, result))
             subs_full.sort()
             return subs_full
-        defer = self.profile.get_submissions(self.id)
-        defer.addCallback(done)
+        defer = self.profile.getSubmissions(self.id)
+        defer.addCallback(_cbGotSubmissions)
         return defer
 
-    def _contest_details(self):
-        "Returns details tuple"
+    def _contestDetails(self):
+        "Returns details dict"
         cp = self.contest.profile
         problems = cp.getProblems()
         results = cp.getResults()
@@ -98,22 +98,28 @@ class TeamAvatar(pb.Avatar):
         for key, (ign, ign, exts) in languages_ex.items():
             languages[key] = exts
         result_acc_index = cp.getACCResult()
-        details = (self.contest.duration, self.contest.get_contest_age(),
-                    problems, results, languages, result_acc_index)
+        details = {
+            'duration': self.contest.duration,
+            'age': self.contest.getContestAge(),
+            'problems': problems,
+            'languages': languages,
+            'results': results,
+            'result_acc_index': result_acc_index
+        }
         return details
 
     def contestStarted(self):
         "Notification on start of contest"
         self.contest_started = True
         # Inform client
-        self.mind.callRemote('contest_started', self.contest.name,
-                             self._contest_details())
+        self.mind.callRemote('contestStarted', self.contest.name,
+                             self._contestDetails())
 
     def contestStopped(self):
         "Notification on stop of contest"
         self.contest_started = False
         # notify client
-        self.mind.callRemote('contest_stopped')
+        self.mind.callRemote('contestStopped')
         
     def perspective_whoami(self):
         """Return the string representing this avatar,
@@ -128,18 +134,18 @@ class TeamAvatar(pb.Avatar):
         """Test method that echoes back the object"""
         return obj
 
-    def perspective_change_passwd(self, newpasswd):
+    def perspective_changePasswd(self, newpasswd):
         """Change the password"""
         d = self.dbproxy.update_user(self.id, password=newpasswd)
         d.addCallbacks(lambda _: True, lambda _:False)
         return d
 
-    def perspective_submit_problem(self, problem_no, problem_text,
+    def perspective_submitProblem(self, problem_no, problem_text,
                                          problem_lang):
         """Submit a problem"""
         if not self.contest_started:
             return None
-        ts = self.contest.get_contest_age()
+        ts = self.contest.getContestAge()
         # If this submission was in the same second as before ..
         if ts == self._last_submitted_ts:
             ts = ts + 1  # add one second to make timestamps unique!
@@ -150,7 +156,7 @@ class TeamAvatar(pb.Avatar):
         # FIXME: renaming doesn't work for Java programs !!
         filename = 'p%d.%s' % (problem_no, \
                     self.profile.getLanguages()[problem_lang][2][0])
-        filepath = self.contest.copy_file(
+        filepath = self.contest.copyFile(
                 self, ts, filename, problem_text)
         workdir = os.path.split(filepath)[0]
         input_dict = {
@@ -158,13 +164,7 @@ class TeamAvatar(pb.Avatar):
             'in': os.path.splitext(os.path.split(filepath)[1])[0]
         }
 
-        reactor.callLater(0,self.profile.submit_complete,
+        reactor.callLater(0,self.profile.submitMeta,
                           self, input_dict, problem_no, problem_lang,
                           ts, workdir)
         return True
-
-    def perspective_submit_query(self, problem_no, query):
-        """Submit a query"""
-        if not self.contest_started:
-            return None
-

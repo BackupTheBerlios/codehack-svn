@@ -54,7 +54,7 @@ class AdminAvatar(pb.Avatar):
         self.loginat = loginat
         self.whoami = 'admin'
 
-    def get_connection_age(self):
+    def connectionAge(self):
         "Return the duration in seconds when avatar is logged in"
         return int(time.time()-self.loginat)
 
@@ -63,7 +63,7 @@ class AdminAvatar(pb.Avatar):
     
     def contestStopped(self):
         "Callback on contest stop"
-        self.mind.callRemote('contest_stopped')
+        self.mind.callRemote('contestStopped')
     
     def perspective_whoami(self):
         """Return the string representing this avatar,
@@ -78,42 +78,45 @@ class AdminAvatar(pb.Avatar):
         """Test method that echoes back the object"""
         return obj
 
-    def perspective_start_contest(self, duration):
-        self.contest.start_contest(duration)
-        return self.perspective_get_contest_info()
+    def perspective_startContest(self, duration):
+        self.contest.startContest(duration)
+        return self.perspective_getInformation()
 
-    def perspective_stop_contest(self):
-        self.contest.stop_contest()
+    def perspective_stopContest(self):
+        self.contest.stopContest()
 
-    def client_login_status_changed(self, avatarId):
+    def liveClientsChanged(self):
         "Notification when a client logs-in/logs-out"
-        self.mind.callRemote('login_status', 
-                        self.perspective_get_clients())
+        self.mind.callRemote('liveClients', 
+                        self.perspective_getLiveClients())
 
-    def perspective_disconnect_client(self, avatarId):
+    def perspective_disconnectClient(self, avatarId):
         "Disconnect a client"
-        self.contest.avatar_disconnect(avatarId)
+        self.contest.liveavatars.disconnect(avatarId)
     
-    def perspective_get_clients(self):
+    def perspective_getLiveClients(self):
         """Return logged in clients dict
         {userid=>(typ, duration)}"""
         clients = {}
-        for userid, avatar in self.contest.avatars.items():
-            clients[userid] = (avatar.whoami, avatar.get_connection_age())
+        for userid, avatar in self.contest.liveavatars.items():
+            clients[userid] = (avatar.whoami, avatar.connectionAge())
         return clients
     
     # Contest information
 
-    def perspective_get_contest_info(self):
-        """Returns name, duration, contestage tuple.
+    def perspective_getInformation(self):
+        """Returns name, duration, age tuple.
 
-        Contest is not running of duration is None"""
-        duration = self.contest.duration
-        name = self.contest.name
-        if duration:
-            return name, duration, self.contest.get_contest_age()
-        return name, None, None
-    
+        Contest is not running if duration is None"""
+        age = None
+        if self.contest.duration:
+            age = self.contest.getContestAge()
+        return {
+            'name': self.contest.name,
+            'duration': self.contest.duration,
+            'age': age
+        }
+        
     # GET ALL - Get list of rows
     #
     

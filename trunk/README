@@ -1,8 +1,22 @@
-codehack is free software unlike the original PC2 [1] .  
 
-It has (well, will) the features necessary to run local or global level 
-automated programming contests.
+Introduction
+------------
+    Codehack is a programming contest control system.  It started in the hope
+of writing a free software alternative to PC2 (http://www.ecs.csus.edu/pc2/ ).
 
-If you are interested in the development see HACKING
+Features
+--------
+    Codehack is still-in-development.  Features planned for final release
+are,
+    1. Basic programming contest control functionality
+    2. Chat support
+    3. Contest Profiles for extending codehack for miscellaneous contests
+and many more which has not yet come to mind ...
 
-[1] http://www.ecs.csus.edu/pc2/
+Development
+-----------
+    Codehack is written in Python, hence making the software more secure.  
+Asynchronous networking framework (Twisted) is used, which means no overhead
+of threads.  See HACKING for further information.
+
+- R. Sridhar (sridhar@users.berlios.de)

@@ -28,7 +28,7 @@ pro = profile.getProfileObject()
 
 cnt = contest.Contest(profile.contest_name, profile.TEST_DIR)
 cnt.open()
-reactor.callLater(0,cnt.start_server, pro)
+reactor.callLater(0,cnt.startServer, pro)
 
 application = gateway.getApplication(cnt, 8800)
 	

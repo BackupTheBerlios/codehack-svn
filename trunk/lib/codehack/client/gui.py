@@ -48,9 +48,9 @@ class ClientGUI(GWidget):
         self.perspective.notifyOnDisconnect(self._disconnected)
         # Status bar
         self._statuscontext = self['statusbar'].get_context_id('Client')
-        self.set_status(READY) 
-        self.contest_time(0,None)
-        self.update_progress()
+        self.setStatus(READY) 
+        self.contestTime(0,None)
+        self.updateProgress()
         
     def on_quit(self, *args):
         self.disconnect()
@@ -65,16 +65,16 @@ class ClientGUI(GWidget):
         # Show all, but specific (supposed to be) hidden widgets
         self.widget.show_all()
         
-    def set_status(self, msg):
+    def setStatus(self, msg):
         """Set the statusbar message"""
         self['statusbar'].push(self._statuscontext, msg)
 
-    def contest_time(self, start_timestamp, duration):
+    def contestTime(self, start_timestamp, duration):
         """Set contest start timestamp (needed for progress bar update)"""
         self.__contest_start = start_timestamp
         self.__contest_duration = duration
         
-    def update_progress(self):
+    def updateProgress(self):
         """Update progress display"""
         pb = self['progressbar']
         age = time.time() - self.__contest_start
@@ -89,7 +89,7 @@ class ClientGUI(GWidget):
             text = '%d secs left!' % (duration - age)
         pb.set_fraction(frac)
         pb.set_text(text)
-        reactor.callLater(1, self.update_progress)
+        reactor.callLater(1, self.updateProgress)
         
     def freeze(self):
         """Freeze UI so that no UI action gets done"""
@@ -110,19 +110,19 @@ class ClientGUI(GWidget):
             if next_success_callback:
                 next_success_callback(result)
         self.unfreeze()
-        self.set_status(READY)
+        self.setStatus(READY)
     
     # Errback for all deferreds
     def _cb_oops(self, reason):
         msg = reason.getErrorMessage()
         util.msg_dialog('CRITICAL: ' + msg, gtk.MESSAGE_ERROR)
-        self.set_status(READY)
+        self.setStatus(READY)
         self.unfreeze()
         
     # Wrapper for .callRemote(
     def call_remote_ex(self, desc, done, method, freeze, *args, **kwargs):
         """<Re-usable function>"""
-        self.set_status(desc + ' ...')
+        self.setStatus(desc + ' ...')
         if freeze:
             self.freeze()
         d = self.perspective.callRemote(method, *args, **kwargs)

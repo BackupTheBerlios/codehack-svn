@@ -5,6 +5,12 @@ Release (0.10) TODO
     * Refactor Profile (*major* work, need UI in client?, ..??)
     * Ensure generic protocol (requires brainstorming)
 
+Bugs
+====
+    * TeamClient - Labels inside ProblemPanel doesn't change on .set_text
+                   also ScrolledWindow warning is new in pygtk-2.4 
+                   side-effect?
+
 ISSUES to be solved
 ===================
     * Solution file naming conventions will conflict with Java programs
@@ -33,3 +39,4 @@ Minor low-priority enhancements
 	(.) buttons: set stock icons for custom-labelled buttons
 	(.) window: better resizing, constant size (even after
 		showing/hiding certain widgets as in DBEdit)
+    (.) Confirmation dialog for critical actions

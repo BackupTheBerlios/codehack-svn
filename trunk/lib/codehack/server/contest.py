@@ -33,6 +33,45 @@ from codehack.server.db import USER_ADMIN, USER_TEAM
 from avatar.team import TeamAvatar
 
 
+class LiveAvatars(object):
+    
+    """Logged in Avatars"""
+    
+    def __init__(self):
+        self._avatars = {}
+        
+    def get(self, avatarId):
+        "Return the avatar which is logged in, None otherwise"
+        if avatarId in self._avatars:
+            return self._avatars[avatarId]
+        return None
+        
+    def items(self):
+        "Return self._avatars.items()"
+        return self._avatars.items()
+    
+    def add(self, avatarId, avatar):
+        "Called when an avatar logs in"
+        log.debug('Avatar [%s] logs in' % avatarId)
+        self._avatars[avatarId] = avatar
+        if self._avatars.has_key('admin'):
+            # Notify admin
+            self._avatars['admin'].liveClientsChanged()
+        
+    def remove(self, avatarId):
+        "Called when an avatar logs out"
+        log.debug('Avatar [%s] logs out' % avatarId)
+        del self._avatars[avatarId]
+        if self._avatars.has_key('admin'):
+            # Notify admin
+            self._avatars['admin'].liveClientsChanged()
+    
+    def disconnect(self, avatarId):
+        "Disconnect an avatar"
+        log.debug('Avatar [%s] will be disconnected' % avatarId)
+        transport = self._avatars[avatarId].mind.broker.transport
+        transport.loseConnection()
+
 class Contest(object):
     """The contest.
     
@@ -66,8 +105,7 @@ class Contest(object):
         self.name = name
         self.directory = abspath(join(directory, name))
         self.dbpath = join(self.directory, 'repos', self.name)
-        self.avatars = {} # dictionary of loggedin avatars
-                          # will be populated by CodehackRealm
+        self.liveavatars = LiveAvatars()
         self._duration = None # If int, then time left to stop started contest
         self._profile = None  # Profile object
         self._ts_start = None # Timestamp during start of contest
@@ -121,7 +159,7 @@ class Contest(object):
         if not resume:
             self.dbproxy.clear_submissions_sync()
 
-    def start_server(self, profile):
+    def startServer(self, profile):
         """Start the contest server
         
         @param profile: ContestProfile object (see profile.__init__.py)
@@ -130,57 +168,17 @@ class Contest(object):
             raise RuntimeError, 'Contest must be opened (contest.open) first'
         import gateway
         self._profile = profile
-        profile.set_contest(self)
+        profile.setContest(self)
 
         # DEBUG - start contest now
-        self.start_contest(60*100)
-        
-        # gateway.start_server(self)
-        # This point will never be reached, until the reactor quits
-        # I don't know whether this (keeping in stack) is good thing to do
-        # so FIXME: (the above)
+        self.startContest(60*100)
 
-    def _get_teamsNOTUSED(self):
-        "Return list of logged-in team avatars"
-        team_avatars = []
-        for avatarid, avatar in self.avatars.items():
-            if isinstance(avatar, TeamAvatar):
-                team_avatars.append(avatar)
-        return team_avatars
-
-    def getAvatar(self, avatarId):
-        "Return the avatar which is logged in, None otherwise"
-        if avatarId in self.avatars:
-            return self.avatars[avatarId]
-        return None
-    
-    def avatars_add(self, avatarId, avatar):
-        "Called when an avatar logs in"
-        log.debug('Avatar [%s] logs in' % avatarId)
-        self.avatars[avatarId] = avatar
-        if self.avatars.has_key('admin'):
-            # Notify admin
-            self.avatars['admin'].client_login_status_changed(avatarId)
-
-    def avatars_remove(self, avatarId):
-        "Called when an avatar logs out"
-        log.debug('Avatar [%s] logs out' % avatarId)
-        del self.avatars[avatarId]
-        if self.avatars.has_key('admin'):
-            # Notify admin
-            self.avatars['admin'].client_login_status_changed(avatarId)
-
-    def avatar_disconnect(self, avatarId):
-        "Disconnect an avatar"
-        transport = self.avatars[avatarId].mind.broker.transport
-        transport.loseConnection()
-
-    def get_contest_age(self):
+    def getContestAge(self):
         "Return number of seconds since start of contest"
         assert self.isrunning() is True, 'Contest is not running!!'
         return int(time.time()) - self._ts_start
     
-    def start_contest(self, duration):
+    def startContest(self, duration):
         """Start accepting submissions
 
         @param duration: Duration (in seconds) before stopping the contest"""
@@ -188,22 +186,26 @@ class Contest(object):
             return
         self._duration = duration
         self._ts_start = int(time.time())
-        reactor.callLater(duration, self.stop_contest)
-        for avatar in self.avatars.values():
+        reactor.callLater(duration, self.stopContest)
+        for avatarId, avatar in self.liveavatars.items():
             avatar.contestStarted()
         log.info('Contest started with duration=%d seconds' % duration)
         
-    def stop_contest(self):
+    def stopContest(self):
         """stop the contest"""
         if self.isrunning() is False:
             return
         self._duration = None
         self._ts_start = None
         # Tell avatars
-        for avatar in self.avatars.values():
+        for avatarId, avatar in self.liveavatars.items():
             avatar.contestStopped()
         log.info('Contest stopped')
-
+        
+    def isrunning(self):
+        """Whether contest is running?"""
+        return self._duration is not None
+    
     def getTeamAvatars(self):
         "Return the list of all (DBid, Team AvatarIds) from database"
         def _cbGotUsers(teams):
@@ -214,11 +216,7 @@ class Contest(object):
         d = self.dbproxy.users_get_all({'type': str(USER_TEAM)})
         return d.addCallback(_cbGotUsers)
     
-    def isrunning(self):
-        """Whether contest is running?"""
-        return self._duration is not None
-    
-    def copy_file(self, avatar, instantid, filename, filecontent):
+    def copyFile(self, avatar, instantid, filename, filecontent):
         """Copy the file to user data directory within directory named 
         instantid 
 

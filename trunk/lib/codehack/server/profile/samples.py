@@ -24,7 +24,8 @@ from twisted.internet import error
 from twisted.internet import process
 
 # service is API to codehack for ContestProfile's
-from codehack.server import services, profile, scoregen
+from codehack.server import services, scoregen
+import base
 
 # ICPC scoring
 
@@ -58,7 +59,7 @@ class ScoreObject(object):
 #       1. Remove Twisted knowledge
 #       2. Provide support for good callback based execution of processes
 
-class SimpleCP(profile.AbstractContestProfile):
+class SimpleCP(base.AbstractContestProfile):
 
     """Simple profile
         
@@ -253,7 +254,6 @@ class Evaluator(protocol.ProcessProtocol):
     def outReceived(self, data):
         # Compare `so-far-received` data
         correct_data = self.output.read(len(data))
-        correct_data = self.output.read(len(data))
         if data != correct_data:
             self.result = self.sh.RES_WA
             self.done()
@@ -285,4 +285,3 @@ class Evaluator(protocol.ProcessProtocol):
             self.defer.callback(self.result)
         except defer.AlreadyCalledError:
             pass # FIXME: I got confused when to .callback and when not!
-            

@@ -39,6 +39,7 @@ class CodehackRealm:
     
     def __init__(self, contest):
         self.contest = contest
+        self.liveavatars = contest.liveavatars
         
     # Authorizes the avatar
     def requestAvatar(self, avatarId, mind, *interfaces):
@@ -48,7 +49,7 @@ class CodehackRealm:
 
         # Already logged in? then return the created Avatar.
         # TODO: better solution is to volunteerily logout the old avatar
-        avatar = self.contest.getAvatar(avatarId)
+        avatar = self.liveavatars.get(avatarId)
         if avatar is not None:
             log.warn('Avatar %s logs in again!' % avatarId)
             return pb.IPerspective, avatar, lambda:None
@@ -76,9 +77,9 @@ class CodehackRealm:
             
         avatar = avatar_factory(mind, self.contest, int(time.time()),
                                 id1, userid, emailid)
-        self.contest.avatars_add(avatarId, avatar)
+        self.liveavatars.add(avatarId, avatar)
         return pb.IPerspective, avatar, \
-                lambda : self.contest.avatars_remove(avatarId)
+                lambda : self.liveavatars.remove(avatarId)
             
 
 # twisted.cred Authentication framework
@@ -121,23 +122,9 @@ class CodehackChecker:
         else:
             return failure.Failure(error.UnauthorizedLogin())
 
-
-# TODO: This is ugly.  Must use .tac
-def start_server(contest):
-    """I'm the main function.  I'll start the Twisted server
-    """
-    PORT=8800
-    p = portal.Portal(CodehackRealm(contest))
-    p.registerChecker(CodehackChecker(contest.dbproxy))
-    reactor.listenTCP(PORT, pb.PBServerFactory(p))
-    log.info('Starting reactor ...')
-    reactor.callLater(0, log.info, 
-                'Server Ready. Listening at port %d' % PORT)
-    reactor.run()
-    log.info('Reactor exited')
-
 def getApplication(contest, port, backlog=500):
-    "Return application that must be run"
+    """"Return application that must be run
+    .tac file calls this function"""
     app = service.Application('codehack')
     realm = CodehackRealm(contest)
     portal_ = portal.Portal(realm)
@@ -147,4 +134,3 @@ def getApplication(contest, port, backlog=500):
     coreservice.setServiceParent(app)
     
     return app
-

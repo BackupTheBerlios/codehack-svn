@@ -51,6 +51,6 @@ if options.newcontest:
     print 'Modify profile.py and use "twistd -noy startserver.tac" to start the server'
 
 if options.client:
-    from codehack import client
-    client.run()
+    from codehack.client.base import run
+    run()
 

@@ -18,6 +18,7 @@
 
 from os.path import join
 import inspect
+import gtk
 
 from twisted.spread import pb, flavors
 from twisted.cred import credentials
@@ -48,7 +49,7 @@ class MindProxy(flavors.Referenceable):
             self._rmi_wait.append( (attrname, args, kwargs) )
         return proxyit
     
-    def set_target(self, target):
+    def setTarget(self, target):
         """Set the target object to call methods for
         
         Call this method with target as the real Mind
@@ -86,7 +87,11 @@ class LoginDialog(GWidget):
         super(LoginDialog, self).__init__(self)
         self._statuscontext = self['statusbar'].get_context_id('Login dialog')
     
-    def set_status(self, msg):
+    def on_quit(self, *args):
+        GWidget.on_quit(self)
+        gtk.main_quit()
+    
+    def setStatus(self, msg):
         """Set the statusbar message"""
         self['statusbar'].push(self._statuscontext, msg)
         
@@ -111,9 +116,9 @@ class LoginDialog(GWidget):
         #port = 8800
         self.mind_proxy = MindProxy()
         if not identity or not password:
-            self.set_status('Please fill both the fields')
+            self.setStatus('Please fill both the fields')
             return
-        self.set_status('Logging in ...')
+        self.setStatus('Logging in ...')
         button.set_sensitive(False)
         # Login using pb
         f = pb.PBClientFactory()
@@ -125,11 +130,11 @@ class LoginDialog(GWidget):
             ).addCallbacks(self._cbGotPerspective, self._ebFailedLogin
             ).setTimeout(TIMEOUT
             )
-        self.set_status("Contacting server...")
+        self.setStatus("Contacting server...")
         
     def _cbGotUserType(self, user_type):
         self.user_type = user_type
-        self.set_status('Logged in')
+        self.setStatus('Logged in')
         reactor.callLater(0, self.cb_func, self.perspective, self.identity,
                             self.user_type, self.mind_proxy, 
                             self.factory.disconnect)
@@ -142,10 +147,10 @@ class LoginDialog(GWidget):
             ).addCallbacks(self._cbGotUserType, self._ebFailedLogin
             ).setTimeout(TIMEOUT
             )
-        self.set_status('Getting authorization information ...')
+        self.setStatus('Getting authorization information ...')
         
     def _ebFailedLogin(self, reason):
-        self.set_status('Login failed')
+        self.setStatus('Login failed')
         reason = str(reason)
         util.msg_dialog(reason)
         self['but_login'].set_sensitive(True)

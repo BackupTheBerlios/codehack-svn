@@ -14,35 +14,6 @@
 # along with this program; if not, write to the Free Software 
 # Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-"""Admin GUI"""
-
-from gtkui import AdminGUI
-
-# Startup function
-def run(perspective, mind_proxy, userid, disconnect):
-    gui = AdminGUI(perspective, userid, disconnect)
-    mind = Mind(gui)
-    mind_proxy.set_target(mind)
-    gui.show()
-
-
-class Mind(object):
-    """Mind object sent to twisted.cred in server
-    
-    Server calls methods in this class"""
-    
-    def __init__(self, gui):
-        self.gui = gui
-        
-    def info(self, msg):
-        """Message from server"""
-        print '**Message:', msg
-
-    def remote_login_status(self, clients):
-        self.gui.gotLoggedClients(clients)
-
-    def remote_contest_stopped(self):
-        self.gui.contest_stopped()
-
-    def remote_contest_started(self):
-        self.gui.contest_started()
+"""
+Codehack Admin Client
+"""

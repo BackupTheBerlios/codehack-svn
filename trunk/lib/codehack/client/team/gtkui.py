@@ -77,10 +77,10 @@ class ProblemPanel(gtk.VBox):
         # Directory of last selected program
         self.selection_directory = os.path.abspath(os.path.curdir)  
         
-    def set_status(self, status):
+    def setStatus(self, status):
         "Set problem status"
         self.pr_status = status
-        self.lbl_status.set_markup(self.MRKUP_DESC % status)
+        self.lbl_status.set_label(self.MRKUP_DESC % status)
         
     def _get_language(self, filename):
         "Return the corresponding language for extension"
@@ -154,7 +154,7 @@ class ProblemPanel(gtk.VBox):
             #    util.msg_dialog('Something Wrong!!')
             pass
         self.gui.call_remote('Submitting %s' % filename, done, 
-                            'submit_problem',
+                            'submitProblem',
                          self.pr_no, file(filename).read(), language)
 
 
@@ -209,7 +209,7 @@ class TeamSubmissions(object):
         # problem_no => PR_*
         self.problem_result = dict([(x,self.PR_NEW) for x in range(self.nr_problems)] )
     
-    def set_submissions(self, submissions):
+    def setSubmissions(self, submissions):
         """Update list of submissions.
         
         submissions is list of (timestamp, pr_no, result)
@@ -236,7 +236,7 @@ class TeamSubmissions(object):
             res = self.problem_result[no]
             if type(res) is int:
                 res = '%d unaccepted submissions' % res
-            pp.set_status(res)
+            pp.setStatus(res)
             
         # Runs list
         self.runs.clear()
@@ -271,12 +271,13 @@ class TeamGUI(gui.ClientGUI):
 
     def _update_submissions(self):
         def done(result):
-            self.callLater(self.submissions.set_submissions, result)
+            self.callLater(self.submissions.setSubmissions, result)
          
         self.call_remote_sync('Updating submissions', done, 
-                         'get_submissions')
+                         'getSubmissions')
 
-    def show_result(self, problem , lang, ts, result):
+    def showSubmissionResult(self, problem , lang, ts, result):
+        "Called from mind, when server sends submission result"
         text = 'Result for %s\n\n%s\n\nLang: %s\nTime: %d'
         text = text % (self.info['problems'][problem],  
                        self.info['results'][result],
@@ -285,48 +286,48 @@ class TeamGUI(gui.ClientGUI):
         self._update_submissions()
         util.msg_dialog(text)
 
-    def update_info(self, name, details):
-        "Update self.info from contest details tuple"
+    def updateInfo(self, name, details):
+        "Update self.info from contest details dict"
         self.info['name'] = name
         if details is None:
             for ky in ('duration', 'age', 'problems', 'languages', 'results', 'result_acc_index'):
                 self.info[ky] = None
             return
-        duration, age, problems, results, languages, result_acc_index = details
-        self.info['duration'] = duration
-        self.info['age'] = age
-        self.info['problems'] = problems
-        self.info['languages'] = languages
-        self.info['results'] = results
-        self.info['result_acc_index'] = result_acc_index
+        _ = details
+        self.info['duration'] = _['duration']
+        self.info['age'] = _['age']
+        self.info['problems'] = _['problems']
+        self.info['languages'] = _['languages']
+        self.info['results'] = _['results']
+        self.info['result_acc_index'] = _['result_acc_index']
     
-    def contest_started(self, name, details):
-        self.update_info(name, details)
+    def contestStarted(self, name, details):
+        self.updateInfo(name, details)
         self._update_ui(True, name)
     
-    def contest_stopped(self):
+    def contestStopped(self):
         "Called by mind on stop of contest"
-        self.update_info(None, None)
+        self.updateInfo(None, None)
         self._update_ui(False)
 
     def _update_ui(self, isrunning, name=None):
         "Change widget attributes based on whether contest is running or not"
         if isrunning is False:
-            self.contest_time(0, None)
+            self.contestTime(0, None)
         else:
-            self.contest_time(time.time() - self.info['age'], 
+            self.contestTime(time.time() - self.info['age'], 
                                 self.info['duration'])
         info = '<b>%sContest is%s running</b>'
         if isrunning:
             info = info % ('%s: ' % name, '')
-            self.show_problems()
+            self.showProblems()
         else:
             info = info % ('', ' NOT')
-            self.unshow_problems()
+            self.unshowProblems()
         self['lbl_contest'].set_markup(info)
         self['nb'].set_sensitive(isrunning)
 
-    def show_problems(self):
+    def showProblems(self):
         # add ProblemPanel
         problems = self.info['problems']
         problem_panels = {}
@@ -342,7 +343,7 @@ class TeamGUI(gui.ClientGUI):
         self.problem_panels = problem_panels
         self._update_submissions()
 
-    def unshow_problems(self):
+    def unshowProblems(self):
         if self.__problems_widget:
             children = self['pr_sw'].get_children()
             self['pr_sw'].remove(children[0])
@@ -352,13 +353,13 @@ class TeamGUI(gui.ClientGUI):
     def _initialize(self):
         def done(result):
             isrunning, name, details = result
-            if isrunning:
-                self.contest_started(name, details)
+            if result['isrunning']:
+                self.contestStarted(result['name'], result['details'])
             else:
-                self.contest_stopped()
+                self.contestStopped()
             
         self.call_remote('Getting contest information', done, 
-                         'get_contest_info')
+                         'getInformation')
 
     def on_but_logout__clicked(self, *args):
         self.on_quit()
