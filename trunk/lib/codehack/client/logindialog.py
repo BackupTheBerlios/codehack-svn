@@ -38,15 +38,31 @@ class MindProxy(flavors.Referenceable):
     be passed during login, we use a common Mind object that we
     later use as a proxy to real (supposed to be) Mind object
     """
+
+    def __init__(self):
+        self._rmi_wait = []
+    
+    def __getattr__(self, attrname):
+        "Proxy for RMI until set_target is called for populating real methods"
+        def proxyit(*args, **kwargs):
+            self._rmi_wait.append( (attrname, args, kwargs) )
+        return proxyit
     
     def set_target(self, target):
         """Set the target object to call methods for
         
         Call this method with target as the real Mind
         """
+        del MindProxy.__getattr__
         for method, method_obj in inspect.getmembers(target):
             if inspect.ismethod(method_obj):
                 setattr(self, method, method_obj)
+        # Flush RMI queue
+        for attrname, args, kwargs in self._rmi_wait:
+            print '>> Flusing', attrname
+            attr = getattr(self, attrname)
+            attr(*args, **kwargs)
+        del self._rmi_wait
     
 
 class LoginDialog(GWidget):

@@ -23,9 +23,6 @@ def run(perspective, mind_proxy, userid, disconnect):
     gui = TeamGUI(perspective, userid, disconnect)
     mind = Mind(gui)
     # FIXME: fix this.
-    print '**Setting mind attributes: ' + \
-          'FIXME: If server sends message before this point, ' + \
-          'AttributeError exception on MindProxy will be raised'
     mind_proxy.set_target(mind)
     gui.widget.show_all()
 

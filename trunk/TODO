@@ -1,7 +1,6 @@
 
 Critical BUGS
 =============
-    * MindProxy bug: before set_target on proxy, server may call mind method!
 
 ISSUES to be solved
 ===================
@@ -27,13 +26,7 @@ Minor low-priority enhancements
 ===============================
 
 1. User Interface:
-    (.) SubmitConfirmation: Don't ask user for confirmation,
-        instead show stats in FileChooser dialog area itself
-        and update the stats whenever a new file is 'selected'
-        On clicking 'Ok' in the FileChooser dialog, send to server
-        without confirmation.
 	(.) DBEdit: dbl-clicking should 'edit' that row
-	(.) pygtk-2.4: then, set buttons to be default (conflicts with twisted-1.3)
 	(.) buttons: set stock icons for custom-labelled buttons
 	(.) window: better resizing, constant size (even after
 		showing/hiding certain widgets as in DBEdit)
