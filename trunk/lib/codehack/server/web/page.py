@@ -28,6 +28,7 @@ from nevow import loaders
 from nevow import guard
 from nevow import liveevil
 from nevow import static
+from nevow import tags as T
 
 from codehack.server import auth
 from codehack.server import db
@@ -50,6 +51,53 @@ class LoginPage(rend.Page):
     def logout(self):
         pass
 
+js_timer = """
+// timestamps
+var ts_start
+var ts_end
+var ts_enabled = 0
+
+function time_message(msg){
+    document.getElementById('progress').innerHTML = msg
+}
+
+function time_start(age, total){
+    var date = new Date()
+    ts_cur = parseInt(date.getTime()/1000)
+    ts_start = ts_cur - age
+    ts_end = ts_start + total
+    ts_enabled = 1
+    setTimeout("time_update()", 1000);
+}
+
+function time_update(){
+    if (!ts_enabled) return
+    var date = new Date()
+    var ts_current = parseInt(date.getTime()/1000)
+    var string = ""
+   /* alert(ts_total)
+    alert(ts_current)*/
+    if (ts_current > ts_end){
+        string = "Contest time (" + (ts_end - ts_start) + ") is over"
+        return
+    }else
+        string = (ts_current-ts_start) + "/" + (ts_end-ts_start) + " seconds"
+    /*alert("going:" + string)*/
+    time_message(string)
+    setTimeout("time_update()", 1000)
+}
+
+function time_stop(){
+    ts_enabled = 0
+    time_message('Contest is not running')
+}
+
+if (%(timer_enable)s){
+   time_start(%(age)s, %(total)s)
+}else{
+   time_stop()
+}
+"""
 
 class MainPage(rend.Page):
 
@@ -61,12 +109,10 @@ class MainPage(rend.Page):
     cssDirectory = join(paths.WEB_DIR, 'styles')
     jsDirectory = join(paths.WEB_DIR, 'js')
 
-    def child_css(self, request):
-        return static.File(web_file(self.cssDirectory),
+    child_css = static.File(web_file(cssDirectory),
                            defaultType="text/css")
 
-    def child_js(self, request):
-        return static.File(web_file(self.jsDirectory),
+    child_js = static.File(web_file(jsDirectory),
                            defaultType="text/javascript")
 
 
@@ -75,12 +121,27 @@ class MainPage(rend.Page):
 
     # Meta Info
     #
+
+    def timer_params(self):
+        age = None
+        duration = None
+        isrunning = self.mind.isrunning
+        if isrunning:
+            age = self.avatar.contest.getContestAge()
+            duration = self.mind.duration
+        return isrunning, duration, age
+
+    def render_js_timer(self, ctx, data):
+        isrunning, duration, age = self.timer_params()
+        js_code = js_timer % {
+            'timer_enable': isrunning and 1 or 0,
+            'age': age,
+            'total': duration
+            }
+        return T.inlineJS(js_code)
     
     def render_name(self, ctx, data):
         return self.mind.name
-
-    def render_age(self, ctx, data):
-        return self.mind.age
 
     def render_duration(self, ctx, data):
         return self.mind.duration
@@ -97,3 +158,5 @@ class MainPage(rend.Page):
   
     def logout(self):
         print 'Bye'
+
+

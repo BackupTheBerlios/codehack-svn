@@ -17,24 +17,44 @@
 """
 Codehack Nevow Mind
 """
-
-class StaticItemStore:
-
-    def __init__(self, value):
-        self.value = value
-
-    def __getitem__(self, item):
-        return self.value
-
     
 class NevowMind:
 
     def __init__(self, mind, avatar, page):
         self.mind = mind
         self.avatar = avatar
-        self.page = page
+        self.page = page(self)  # The page
         self.name = None        # Contest name
         self.isrunning = False
 
     def init(self):
         pass
+
+    # Mind methods
+    #
+
+    def _setStatus(self):
+        "Send to browser the status HTML text"
+        # Status text
+        for key, value in {
+            'name':self.name,
+            'duration': self.duration,
+            'progress': 'Contest is not running'
+            }.items():
+            self.mind.set(key, value)
+        # Enable/disable form elements
+        method_call = ['.setAttribute("disabled", "True")',
+            '.removeAttribute("disabled")']
+        self.mind.sendScript('document.getElementById("submit_button")' + \
+                             method_call[int(self.isrunning)])
+
+    def contestStopped(self):
+        self._setStatus()
+        self.mind.call('time_stop')
+        self.mind.alert("Contest Stopped")
+     
+    def contestStarted(self, name, details):
+        self._setStatus()
+        isrunning, duration, age = self.page.timer_params()
+        self.mind.call('time_start', age, duration)
+        self.mind.alert("Contest Started")

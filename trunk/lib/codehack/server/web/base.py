@@ -48,5 +48,5 @@ class WebRealm(auth.CodehackRealm):
         def logout():
             resc.logout()
             remove_f()
-        return self.interface, mind.page(mind), logout
+        return self.interface, mind.page, logout
 

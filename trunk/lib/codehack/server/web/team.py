@@ -34,6 +34,15 @@ from codehack import paths
 from mind import NevowMind
 import page
 
+
+class StaticItemStore:
+
+    def __init__(self, value):
+        self.value = value
+
+    def __getitem__(self, item):
+        return self.value
+
 class NevowTeamMind(NevowMind):
 
     def __init__(self, mind, avatar):
@@ -117,26 +126,18 @@ class NevowTeamMind(NevowMind):
 
     def submissionResult(self, result):
         def _cbGot(result):
-            # FIXME: this liveevil stuff not working!
-            # stanobj = self.runsHTML()
-            # self.mind.set('runs', stanobj)
-
-            # Since the above doesn't work :(, we got for a full
-            # page reload!
-            # render_ method will take care of displaying the
-            # new data
-            self.mind.sendScript('window.location.reload()')
+            stanobj = self.runsHTML()
+            self.mind.set('runs', stanobj)
+            self.mind.alert('Runs updated')
         return self.update_submissions().addCallback(_cbGot)
 
     def contestStopped(self):
         self.update_details(False, self.name)
-        self.mind.sendScript('alert("Contest Stopped");')
-        # self.gui.contestStopped()
+        NevowMind.contestStopped(self)
 
     def contestStarted(self, name, details):
         self.update_details(True, name, details)
-        self.mind.sendScript(
-            'alert("Contest Started");')
+        NevowMind.contestStarted(self, name, details)
 
 
 
