@@ -21,7 +21,7 @@
     <link rel="stylesheet" type="text/css" href="./gila-print.css" media="screen" title="Print" />
     <link rel="stylesheet" type="text/css" href="./gila-print.css" media="print" title="Print" />
 
-    <title>Codehack</title>
+    <title>codehack</title>
   </head>
 
   <body>
@@ -32,7 +32,7 @@
 
     <div id="header">
       <h1 class="headerTitle">
-        <a href="./index.shtml" title="Browse to homepage">Codehack 
+        <a href="./index.shtml" title="Browse to homepage">codehack 
         <span>Programming Contest Control System</span></a>
       </h1>
 
@@ -50,12 +50,6 @@
       <!-- ##### Left Sidebar ##### -->
 
       <div class="leftSideBar">
-        <p class="sideBarTitle">This Page</p>
-        <ul>
-          <li><a href="#introduction">Introduction</a></li>
-          <li><a href="#development" title="Development information">Development</a></li>
-        </ul>
-
         <p class="sideBarTitle">Exits</p>
         <ul>
           <li><a href="http://cs.annauniv.edu/~rsridhar">Author's Home</a></li>
