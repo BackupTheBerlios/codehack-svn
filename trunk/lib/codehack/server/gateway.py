@@ -27,6 +27,10 @@ from twisted.cred import credentials
 from twisted.spread import pb
 from twisted.python import failure
 
+from nevow import appserver
+from nevow import liveevil
+from nevow import guard
+
 from codehack.util import log
 from codehack.server.avatar import team, admin
 from codehack.server import db
@@ -111,7 +115,8 @@ class CodehackChecker:
         log.debug('uid = ' + str(uid))
         if uid is None:
             # No user with that name found
-            return error.UnauthorizedLogin()
+            # return error.UnauthorizedLogin()
+            return failure.Failure(error.UnauthorizedLogin())
         return defer.maybeDeferred(
             cred.checkPassword, uid['passwd']).addCallback(
             self._cbPasswordMatch, cred.username)
@@ -122,15 +127,31 @@ class CodehackChecker:
         else:
             return failure.Failure(error.UnauthorizedLogin())
 
-def getApplication(contest, port, backlog=500):
+def getApplication(contest, port, backlog=500, backlog_web=500):
     """"Return application that must be run
     .tac file calls this function"""
     app = service.Application('codehack')
+    
     realm = CodehackRealm(contest)
     portal_ = portal.Portal(realm)
     portal_.registerChecker(CodehackChecker(contest.dbproxy))
     
+    # The Distributed service (twisted.spread)
     coreservice = internet.TCPServer(port, pb.PBServerFactory(portal_), backlog)
     coreservice.setServiceParent(app)
+    
+    # The Web service (nevow)
+    from web import test
+    realm = test.WebRealm()
+    myChecker = CodehackChecker(contest.dbproxy)
+    portal_ = portal.Portal(realm)
+    portal_.registerChecker(myChecker)
+    portal_.registerChecker(checkers.AllowAnonymousAccess(), credentials.IAnonymous)
+    # site = appserver.NevowSite(MainPage())
+    site = appserver.NevowSite(
+        resource=guard.SessionWrapper(portal_)
+    )
+    webservice = internet.TCPServer(8080, site, backlog_web)
+    webservice.setServiceParent(app)
     
     return app

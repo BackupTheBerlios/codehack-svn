@@ -164,7 +164,7 @@ class SimpleCP(base.AbstractContestProfile):
 
     def submit(self, team, input_dict,
                      problem, language, timestamp, workdir):
-        # The ungliest part of this method is
+        # The ugliest part of this method is
         #  whenever a longer operation (such as compile, execution)
         #  is to be done, we need to start it (the operation)
         #  and return from the method, just after passing the follow-on
