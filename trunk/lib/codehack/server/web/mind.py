@@ -48,35 +48,13 @@ class NevowMind:
         "Called when the mind is first created (on user logon)"
         pass
 
-    def pageInit(self):
-        "Called when the page is loaded"
-        if self.isrunning:
-            self._startTimer()
-        else:
-            self._stopTimer()
-
-    def _startTimer(self):
-        # Start timer
-        age = None
-        duration = None
-        isrunning = self.isrunning
-        if isrunning:
-            age = self.avatar.contest.getContestAge()
-            duration = self.duration
-        self.mind.call('time_start', age, duration)
-
-    def _stopTimer(self):
-        self.mind.call('time_stop')
-        
     # Mind methods
     #
 
     def contestStopped(self):
-        self._stopTimer()
-        self.mind.alert("Contest Stopped")
+        self.mind.alert("Contest is stopped")
         self.js.reload()
      
     def contestStarted(self, name, details):
-        self._startTimer()
-        self.mind.alert("Contest Started")
+        self.mind.alert("Contest is started")
         self.js.reload()

@@ -38,17 +38,6 @@ import msg
 import error
 
 
-class StaticItemStore:
-
-    "Static getter: self['whatever'] will always return self.value"
-    
-    def __init__(self, value):
-        self.value = value
-
-    def __getitem__(self, item):
-        return self.value
-
-
 class NevowTeamMind(NevowMind):
 
     def __init__(self, mind, avatar):
@@ -59,27 +48,27 @@ class NevowTeamMind(NevowMind):
         self.submissions = []
         result = self.avatar.perspective_getInformation()
         self.update_details(result['isrunning'], result['name'],
-                            result['details'])
+                            result['details'], keepOld=False)
         NevowMind.init(self)
         return self.update_submissions()
 
-    def pageInit(self):
-        # self._sendRuns()
-        NevowMind.pageInit(self)
-
-    def update_details(self, isrunning, name, details=None):
+    def update_details(self, isrunning, name, details=None, keepOld=True):
         "Update new contest details"
         self.isrunning = isrunning
         self.name = name
-        d = details
-        if d is None:
-            d = StaticItemStore('Contest is not running')
-        self.duration = d['duration']
-        self.age = d['age']
-        self.problems = d['problems']
-        self.languages = d['languages']
-        self.results = d['results']
-        self.result_acc_index = d['result_acc_index']
+        if isrunning:
+            self.duration = details['duration']
+            self.age = details['age']
+            self.problems = details['problems']
+            self.languages = details['languages']
+            self.results = details['results']
+            self.result_acc_index = details['result_acc_index']
+        else:
+            self.duration = None
+            self.age = None
+            if not keepOld:
+                self.problems = self.languages = self.results = None
+                self.result_acc_index = None
 
     def update_submissions(self):
         "Update submissions from database"
@@ -89,13 +78,6 @@ class NevowTeamMind(NevowMind):
             self.submissions = submissions
         return d.addCallback(_cbGot)
 
-    def _sendContestState(self):
-        # Enable/disable form elements
-        # 'Upload' button
-        method_call = ['.setAttribute("disabled", "True")',
-            '.removeAttribute("disabled")']
-        self.mind.sendScript('document.getElementById("submit_button")' + \
-                             method_call[int(self.isrunning)])
         
     def submitProgram(self, filename, filecontent):
         if not self.isrunning:
@@ -134,18 +116,16 @@ class NevowTeamMind(NevowMind):
     def submissionResult(self, result):
         def _cbUpdated(result):
             self.page.status.info(
-                "Result of run - %d" % len(self.submissions))
+                "Run result - %d" % len(self.submissions))
             self.js.reload()
         self.update_submissions().addCallback(_cbUpdated)
 
     def contestStopped(self):
         self.update_details(False, self.name)
-        self._sendContestState()
         NevowMind.contestStopped(self)
 
     def contestStarted(self, name, details):
         self.update_details(True, name, details)
-        self._sendContestState()
         NevowMind.contestStarted(self, name, details)
 
 
@@ -177,6 +157,11 @@ class TeamPage(page.MainPage):
             return url.URL.fromRequest(inevow.IRequest(ctx)), ()
         
         return super(TeamPage, self).locateChild(ctx, segments)
+
+    def render_submit_button(self, ctx, data):
+        if not self.mind.isrunning:
+            return ctx.tag(disabled="True")
+        return ctx.tag
 
     def data_runs(self, context, data):
         data = []

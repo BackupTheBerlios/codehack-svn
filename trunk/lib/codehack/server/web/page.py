@@ -61,7 +61,7 @@ class StatusNotifier:
     to browser that either sent POST/GE request or a liveevil
     callback"""
 
-    DEFAULT = 'none'
+    DEFAULT = None
 
     def __init__(self, contest):
         self.contest = contest # contest object (for time, age info)
@@ -128,10 +128,37 @@ class MainPage(rend.Page):
         super(MainPage, self).__init__(*args, **kwargs)
         self.status = StatusNotifier(self.mind.avatar.contest)
 
+    def render_glue(self, ctx, data):
+        "All in one glue!"
+        stans = []
+        stans.append(T.script(src="liveevil", language="javascript"))
+        stans.append(T.script(src="js/codehack.js", langauge="javascript"))
+        js = """
+        function onLoad(){
+          var isrunning = %(isrunning)s;
+          if (isrunning){
+             time_start(%(age)s, %(duration)s);
+          }else{
+             time_stop();
+          }
+        }
+        """
+        age = None
+        if self.mind.isrunning:
+            age = self.mind.avatar.contest.getContestAge()
+        info_dict = {
+            'isrunning': self.mind.isrunning and 'true' or 'false',
+            'age': age,
+            'duration': self.mind.duration
+        }
+        stans.append(T.inlineJS(js % info_dict))
+        return stans
+
     def render_body(self, ctx, data):
         "On page load call self.mind.pageInit"
-        return ctx.tag(onload=liveevil.handler(
-            lambda client: self.mind.pageInit()))
+        #return ctx.tag(onload=liveevil.handler(
+        #    lambda client: self.mind.pageInit()))
+        return ctx.tag(onload="onLoad();")
 
     def render_userpage(self, ctx, data):
         return self.userPage
@@ -146,7 +173,10 @@ class MainPage(rend.Page):
         return ctx.tag[self.mind.name]
 
     def render_duration(self, ctx, data):
-        return ctx.tag[self.mind.duration]
+        duration = 'Contest is not running'
+        if self.mind.isrunning:
+            duration = self.mind.duration
+        return ctx.tag[duration]
 
     def render_status(self, ctx, data):
         msg, error = self.status.render()

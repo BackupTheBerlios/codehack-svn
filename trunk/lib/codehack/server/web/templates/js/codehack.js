@@ -63,28 +63,4 @@ function time_stop(){
     time_message('Contest is not running');
 }
 
-/*
-if (%(timer_enable)s){
-    time_start(%(age)s, %(total)s);
-}else{
-    time_stop();
-}
-*/
-
-
-/* 
- * Page loading control
- */
-
-// transform to 'mainPage' from 'loading' page
-function page_show(){
-    /*alert('start')
-    mainBody = getId('mainBody');
-    loading = getId('loading');
-    mainBody.style.visibility = 'visible';
-    loading.style.visibility = 'hidden';
-    alert('emnd');*/
-    document.getElementById('mainBody').style.visibility = 'visible';
-    document.getElementById('loading').style.visibility = 'hidden';
-}
 
