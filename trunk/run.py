@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# Copyright (C) 2004 R. Sridhar <sridharinfinity AT users DOT sf DOT net>.
+# Copyright (C) 2004 Sridhar .R <sridhar@users.berlios.de>.
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
