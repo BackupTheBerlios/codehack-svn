@@ -88,7 +88,7 @@ class TeamAvatar(pb.Avatar):
         return {
             'isrunning': isrunning,
             'name': self.contest.name,
-            'details': isrunning and self._contestDetails() or None
+            'details': self._contestDetails()
         }
         
     def perspective_getSubmissions(self):
@@ -155,7 +155,9 @@ class TeamAvatar(pb.Avatar):
 # -------------------------------------------------------------------------- #
 
     def _contestDetails(self):
-        "Returns details dict"
+        """Return the details dict.
+        Note: Contest need not be started
+        """
         cp = self.contest.profile
         problems = cp.getProblems()
         results = cp.getResults()
@@ -164,9 +166,12 @@ class TeamAvatar(pb.Avatar):
         for key, (ign, ign, exts) in languages_ex.items():
             languages[key] = exts
         result_acc_index = cp.getACCResult()
+        age = -1
+        if self.contest.isrunning():
+            age = self.contest.getContestAge()
         details = {
             'duration': self.contest.duration,
-            'age': self.contest.getContestAge(),
+            'age': age,
             'problems': problems,
             'languages': languages,
             'results': results,

@@ -48,27 +48,21 @@ class NevowTeamMind(NevowMind):
         self.submissions = []
         result = self.avatar.perspective_getInformation()
         self.update_details(result['isrunning'], result['name'],
-                            result['details'], keepOld=False)
+                            result['details'])
         NevowMind.init(self)
         return self.update_submissions()
 
-    def update_details(self, isrunning, name, details=None, keepOld=True):
+    def update_details(self, isrunning, name, details=None):
         "Update new contest details"
         self.isrunning = isrunning
         self.name = name
-        if isrunning:
+        if details is not None:
             self.duration = details['duration']
             self.age = details['age']
             self.problems = details['problems']
             self.languages = details['languages']
             self.results = details['results']
             self.result_acc_index = details['result_acc_index']
-        else:
-            self.duration = None
-            self.age = None
-            if not keepOld:
-                self.problems = self.languages = self.results = None
-                self.result_acc_index = None
 
     def update_submissions(self):
         "Update submissions from database"
