@@ -105,6 +105,14 @@ class NevowTeamMind(NevowMind):
         self.mind.set('runs', stanobj)
         self.mind.alert('Runs updated.')
 
+    def _sendContestState(self):
+        # Enable/disable form elements
+        # 'Upload' button
+        method_call = ['.setAttribute("disabled", "True")',
+            '.removeAttribute("disabled")']
+        self.mind.sendScript('document.getElementById("submit_button")' + \
+                             method_call[int(self.isrunning)])
+        
     def submitProgram(self, filename, filecontent):
         if not self.isrunning:
             return msg.CNT_NOT_RUNNING
@@ -150,10 +158,12 @@ class NevowTeamMind(NevowMind):
 
     def contestStopped(self):
         self.update_details(False, self.name)
+        self._sendContestState()
         NevowMind.contestStopped(self)
 
     def contestStarted(self, name, details):
         self.update_details(True, name, details)
+        self._sendContestState()
         NevowMind.contestStarted(self, name, details)
 
 
@@ -162,10 +172,8 @@ SUBMIT = '_submit'
 
 class TeamPage(page.MainPage):
 
-    docFactory = loaders.xmlfile(
-        join(paths.WEB_DIR, 'team.html'))
-
-
+    userPage = loaders.xmlfile(join(paths.WEB_DIR, 'team.html'))
+    
     def __init__(self,mind):
         self.mind = mind
         self.avatar = mind.avatar
@@ -179,10 +187,11 @@ class TeamPage(page.MainPage):
             fields = inevow.IRequest(ctx).fields
             filecontent = fields.getvalue('source')
             filename = fields['source'].filename
+            print 'GGGGGG', filename
             self.status = self.mind.submitProgram(filename, filecontent)
             return url.URL.fromRequest(inevow.IRequest(ctx)), ()
         
-        return rend.Page.locateChild(self, ctx, segments)
+        return super(TeamPage, self).locateChild(ctx, segments)
 
     def render_runs(self, ctx, data):
         return self.mind.runsHTML()

@@ -59,6 +59,13 @@ class MainPage(rend.Page):
 
     addSlash = True
 
+    # The userpage (loaders.htmlfile)
+    # This will be included in the page
+    userPage = None
+
+    docFactory = loaders.xmlfile(
+        join(paths.WEB_DIR, 'userpage.html'))
+
     # Directories
     cssDirectory = join(paths.WEB_DIR, 'styles')
     jsDirectory = join(paths.WEB_DIR, 'js')
@@ -77,6 +84,9 @@ class MainPage(rend.Page):
         "On page load call self.mind.pageInit"
         return ctx.tag(onload=liveevil.handler(
             lambda client: self.mind.pageInit()))
+
+    def render_userpage(self, ctx, data):
+        return self.userPage
 
     # Meta Info
     #

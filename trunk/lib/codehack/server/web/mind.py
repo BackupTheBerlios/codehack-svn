@@ -80,12 +80,6 @@ class NevowMind:
         js.set('loginname', self.avatar.userid)    # Userid
         js.set('name', self.name)                  # Contest name
         js.set('duration', self.duration)          # Duration of contest
-        # Enable/disable form elements
-        # 'Upload' button
-        method_call = ['.setAttribute("disabled", "True")',
-            '.removeAttribute("disabled")']
-        self.mind.sendScript('document.getElementById("submit_button")' + \
-                             method_call[int(self.isrunning)])
         
     # Mind methods
     #

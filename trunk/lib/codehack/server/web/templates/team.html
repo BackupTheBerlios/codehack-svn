@@ -1,34 +1,4 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
-    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml" xmlns:n=
-"http://nevow.com/ns/nevow/0.1">
-<head>
-  <link rel="stylesheet" type="text/css" href="css/screen.css" 
-      media="screen, tv, projection" title="Default" />
-  <link rel="stylesheet alternative" type="text/css" href="css/print.css" 
-      media="screen" title="Print Preview" />
-  <link rel="stylesheet" type="text/css" href="css/print.css" 
-      media="print" />
-  <meta name="generator" content=
-        "HTML Tidy for Linux/x86 (vers 1st August 2004), see www.w3.org" />
-  <title>Welcome</title>
-  <span n:render="glue"></span>
-  <span n:render="codehack_glue"></span>
-  <!-- <span n:render="js_timer"></span> -->
-  
-<!-- TODO: progress bar
-<script language="javascript" src="js/timerbar.js" >
-</script>-->
-
-</head>
-
-<body n:render="body">
-<div style="visibility: visible;" id="loading">
-Loading ...
-</div>
-
-<div style="visibility: hidden;" id="mainBody">
-
+<span>
   <h1><em id="loginname"></em> - Welcome to 
       <acronym title="Online Programming Contest">OPC</acronym></h1>
 
@@ -69,18 +39,4 @@ Loading ...
   <h2>Messages</h2>
   <p id="info">...</p>
   </div>
-
- 
-
-  <hr />
-  <a n:render="logout"><b>Logout</b></a>
-
-  <div id="footer">
-    <span class="doNotPrint">
-    Powered by <a href="http://codehack.berlios.de">Codehack</a>
-    </span>
-  </div>
-
-</div> <!-- visibility div tag -->
-</body>
-</html>
+</span>
