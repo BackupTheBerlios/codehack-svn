@@ -15,7 +15,7 @@
 # Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
 """
-Pages - <Refactor this>
+Pages
 """
 
 import time
@@ -58,7 +58,7 @@ class LoginPage(rend.Page):
 class StatusNotifier:
 
     """Convinient class for notifying info/error messages
-    to browser that either sent POST/GE request or a liveevil
+    to browser that either sent POST/GET request or a liveevil
     callback"""
 
     DEFAULT = None
@@ -156,8 +156,6 @@ class MainPage(rend.Page):
 
     def render_body(self, ctx, data):
         "On page load call self.mind.pageInit"
-        #return ctx.tag(onload=liveevil.handler(
-        #    lambda client: self.mind.pageInit()))
         return ctx.tag(onload="onLoad();")
 
     def render_userpage(self, ctx, data):
@@ -182,7 +180,7 @@ class MainPage(rend.Page):
         msg, error = self.status.render()
         if msg is None:
             msg = ''
-        return ctx.tag(class_=["info", "error"][error])[msg]
+        return ctx.tag(_class=["info", "error"][error])[msg]
 
     def data_messages(self, ctx, data):
         data = self.status.getMessages()[:]
@@ -191,7 +189,7 @@ class MainPage(rend.Page):
 
     def render_message_row(self, ctx, data):
         ts, msg, error = data
-        ctx.tag(class_=["info", "error"][error])
+        ctx.tag(_class=["info", "error"][error])
         ctx.fillSlots("msg", msg)
         ctx.fillSlots("ts", ts)
         return ctx.tag

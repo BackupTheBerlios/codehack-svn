@@ -35,6 +35,8 @@ class NevowMind:
     def __init__(self, mind, avatar, page):
         self.mind = mind
         self.avatar = avatar
+        # Page instances must be created by the MindAdaptor
+        # Only mind and avatar is handled by twisted.spread
         self.page = page(self)  # The page
         self.name = None        # Contest name
         self.isrunning = False

@@ -98,7 +98,7 @@ class NevowTeamMind(NevowMind):
         # no, lang
         status = self.avatar.perspective_submitProblem(no, filecontent, lang)
         if status is None:
-            raise error.WebServiceError, "Problem in submission!"
+            raise error.WebServiceError, "Some internal error has occurred. Your problem was not submitted successfully!"
     
     # Mind methods
     #
@@ -140,6 +140,8 @@ class TeamPage(page.MainPage):
         if segments[0] == SUBMIT:
             # User has submitted program
             fields = inevow.IRequest(ctx).fields
+            # TODO: check the filesize before getting
+            # XXX: otherwise this is a major DOS vulnerability!!
             filecontent = fields.getvalue('source')
             filename = fields['source'].filename
             try:

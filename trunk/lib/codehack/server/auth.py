@@ -60,6 +60,7 @@ class CodehackRealm:
             log.debug('LOGIN: ' + avatarId + ' Mind? ' + str(mind is not None))
         for iface in interfaces:
             if iface is self.interface:
+                # Anonymous or authenticated ?
                 if avatarId is checkers.ANONYMOUS:
                     return self.requestAnonymousAvatar(mind)
                 else:
@@ -152,7 +153,6 @@ class CodehackChecker:
         log.debug('uid = ' + str(uid))
         if uid is None:
             # No user with that name found
-            # return error.UnauthorizedLogin()
             return failure.Failure(error.UnauthorizedLogin())
         return defer.maybeDeferred(
             cred.checkPassword, uid['passwd']).addCallback(

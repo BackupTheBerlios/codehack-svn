@@ -29,7 +29,8 @@ import page
 import team, admin
 
 class WebRealm(auth.CodehackRealm):
-    """A simple implementor of cred's IRealm.
+    
+    """Web version of cred's IRealm.
        For web, this gives us the LoggedIn page.
     """
     __implements__ = portal.IRealm
@@ -42,6 +43,8 @@ class WebRealm(auth.CodehackRealm):
     }
     
     def requestAnonymousAvatar(self, mind):
+        # For anonymous visitors, return Login Page
+        # TODO: show statistics, rankings, etc ....
         return self.interface, page.LoginPage(), lambda: None
 
     def requestThisAvatar(self, avatarId, mind, remove_f):
