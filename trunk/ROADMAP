@@ -1,0 +1,14 @@
+
+current = 0.0
+
+v 0.10
+======
+    *  (basic usable support)
+    *  contest statistics (html) generation (real-time)
+    *  contest profile (unfrozen API)
+
+v 0.20
+======
+    *  client side submission stats
+    ** chat with judges (jabber?)
+    ...

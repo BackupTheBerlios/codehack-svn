@@ -1,0 +1,38 @@
+
+Critical BUGS
+=============
+
+ISSUES to be solved
+===================
+    * Solution file naming conventions will conflict with Java programs
+      If we save as 'p%d.java' % pr_no, but the public class name must
+      have been something else defined in client side.
+      Temporary solution is contest admin must ask teams to use p0, p1 as
+      java class names.
+    * timestamp when sent from server, particularly in dialup connection
+      will have significant delay in client side.  Possible solutions are
+      adaptive average response time, ntp, ...
+    * Use of 'submission' id as mode of pointing out particular submission
+    * Quitting and starting the server for same contest - should it resume 
+      last contest or restart it from beginning?
+
+Definite enhancements
+=====================
+    * Errback for client login, displays all kind of errors,
+      instead of just saying 'Login Failed'
+
+Minor low-priority enhancements
+===============================
+
+1. User Interface:
+    (.) SubmitConfirmation: Don't ask user for confirmation,
+        instead show stats in FileChooser dialog area itself
+        and update the stats whenever a new file is 'selected'
+        On licking 'Ok' in the FileChooser dialog, send to server
+        without confirmation.
+	(.) DBEdit: dbl-clicking should 'edit' that row
+	(.) pygtk-2.4: then, set buttons to be default (conflicts with twisted-1.3)
+	(.) buttons: set stock icons for custom-labelled buttons
+	(.) window: better resizing, constant size (even after
+		showing/hiding certain widgets as in DBEdit)
+	(.) Better login dialog

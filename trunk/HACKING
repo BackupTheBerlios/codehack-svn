@@ -1,0 +1,42 @@
+
+codehack is a Programming contest control software (see README).
+
+Dependencies
+-------------
+	1.  Python (www.python.org) v2.3.x
+	2.  Twisted (www.twistedmatrix.com) v1.3
+	3. *SQLite (www.sqlite.org) v2.8.x (not v3.x)
+	4. *PySQLite (www.pysqlite.sf.net)
+	5.  PyGTK (www.pygtk.org) v2.4.x 
+
+* needed only by server
+
+Brief architecture
+------------------
+
+	* a new contest is created
+		$ ./run.py newcontest <contest_name>
+	* server is started
+		$ ./run.py s <contest_name>
+	* different types of users (clients)
+		- admin : who configures the contest
+		- judge : for now, he takes care of answering queries [1]
+		- team  : contest team
+	* client logins
+		$ ./run.py c
+
+Currently there will be an admin account
+	# userid: admin
+	# passwd: a (asked during contest creation)
+And not to say, accounts can only be created by 'admin' 
+
+Other than this just look into the source.  If you care, the prime 
+methodology is the OpenSource style (which resembles XP to some extent)
+
+
+[1] compilation/execution are automated - server will take care of that
+
+
+----------
+R. Sridhar (sridharinfinity@users.sf.net)
+
