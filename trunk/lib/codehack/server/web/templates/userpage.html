@@ -22,9 +22,9 @@ Loading ...
   <h1><em id="loginname"></em> - Welcome to 
       <acronym title="Online Programming Contest">OPC</acronym></h1>
 
-  <center><p class="status">
+  <center>
       <span n:render="status" class="status"></span>
-  </p></center>
+  </center>
 
   <div class="section">
   <h2>Status</h2>
@@ -39,10 +39,27 @@ Loading ...
   <!-- Point of speciality - Insert user page here -->
   <div n:render="userpage"></div>
 
+  <div class="section">
+  <h2>Messages</h2>
+  <table style="width: 90%;" border="1" n:data="messages" n:render="sequence">
+    <tr n:pattern="header">
+      <th>Time</th>
+      <th>Message</th>
+    </tr>
+    <tr n:pattern="item" n:render="message_row">
+      <td><n:slot name="ts" /></td>
+      <td><n:slot name="msg" /></td>
+    </tr>
+    <tr n:pattern="empty">
+      <td colspan="2"><em>Noop!</em></td>
+    </tr>
+  </table>
+  </div>
+
   <hr />
   <a n:render="logout"><b>Logout</b></a>
 
-  <div id="footer">
+  <div class="Footer">
     <span class="doNotPrint">
     Powered by <a href="http://codehack.berlios.de">Codehack</a>
     </span>

@@ -17,11 +17,29 @@
 
   <div class="section">
   <h2>Runs</h2>
-  <div class="run"><p id="runs"></p></div>
+  <span class="run">
+  <table style="width: 90%;" border="1" n:data="runs" n:render="sequence">
+    <tr n:pattern="header">
+      <th>Run</th>
+      <th>Problem</th>
+      <th>Language</th>
+      <th>Result</th>
+      <th>Time</th>
+    </tr>
+    <tr n:pattern="item" n:render="run_row">
+      <td><n:slot name="run" /></td>
+      <td><n:slot name="problem" /></td>
+      <td><n:slot name="language" /></td>
+      <td><n:slot name="result" /></td>
+      <td><n:slot name="ts" /></td>
+    </tr>
+
+    <tr n:pattern="empty">
+      <td colspan="5"><em>Yet to submit first program!</em></td>
+    </tr>
+  </table>
+  </span>
+  <!-- <p class="run"><span n:render="runs"></span></p> -->
   </div>
 
-  <div class="section">
-  <h2>Messages</h2>
-  <p id="info">...</p>
-  </div>
 </span>

@@ -43,3 +43,7 @@ class JSUtil(object):
 
     def alert(self, msg):
         self.mind.alert(msg)
+
+    def reload(self):
+        "Reload client page"
+        self.mind.sendScript("window.location.reload();")

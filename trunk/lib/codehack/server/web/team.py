@@ -64,7 +64,7 @@ class NevowTeamMind(NevowMind):
         return self.update_submissions()
 
     def pageInit(self):
-        self._sendRuns()
+        # self._sendRuns()
         NevowMind.pageInit(self)
 
     def update_details(self, isrunning, name, details=None):
@@ -88,24 +88,6 @@ class NevowTeamMind(NevowMind):
         def _cbGot(submissions):
             self.submissions = submissions
         return d.addCallback(_cbGot)
-
-    def runsHTML(self):
-        "Return submissions stat as HTML"
-        # TODO: make use of nevow's pattern/slots
-        items = []
-        for run in self.submissions:
-            ts, pr, lang, res = run
-            item = T.li[[T.strong[pr], '/', T.i[lang], ': ',
-                    T.em[self.results[res]], ' in ', ts, ' seconds']]
-            items.append(item)
-        items.reverse() # newer run on top!
-        return T.ol[items]
-
-    def _sendRuns(self):
-        "Send runs data to browser"
-        stanobj = self.runsHTML()
-        self.mind.set('runs', stanobj)
-        self.mind.alert('Runs updated.')
 
     def _sendContestState(self):
         # Enable/disable form elements
@@ -147,10 +129,13 @@ class NevowTeamMind(NevowMind):
         
     def info(self, msg):
         """Message from server"""
-        self.mind.set('info', msg)
+        # self.mind.set('info', msg)
 
     def submissionResult(self, result):
-        return self.update_submissions().addCallback(lambda _: self._sendRuns())
+        def _cbUpdated(result):
+            self.page.status.info("Runs updated")
+            self.js.reload()
+        self.update_submissions().addCallback(_cbUpdated)
 
     def contestStopped(self):
         self.update_details(False, self.name)
@@ -171,9 +156,9 @@ class TeamPage(page.MainPage):
     userPage = loaders.xmlfile(join(paths.WEB_DIR, 'team.html'))
 
     def __init__(self,mind):
-        super(TeamPage, self).__init__()
         self.mind = mind
         self.avatar = mind.avatar
+        super(TeamPage, self).__init__()
 
     def locateChild(self, ctx, segments):
 
@@ -192,8 +177,26 @@ class TeamPage(page.MainPage):
         
         return super(TeamPage, self).locateChild(ctx, segments)
 
-    def render_runs(self, ctx, data):
-        return self.mind.runsHTML()
+    def data_runs(self, context, data):
+        data = []
+        index = 1
+        for run in self.mind.submissions:
+            ts, pr, lang, res = run
+            dct = {}
+            dct['run'] = index
+            dct['problem'] = pr
+            dct['language'] = lang
+            dct['result'] = res
+            dct['ts'] = ts
+            data.append(dct)
+            index = index + 1
+        data.reverse()         # most recent runs first
+        return data
+        
+    def render_run_row(self, context, data):
+        for key, value in data.items():
+            context.fillSlots(key, value)
+        return context.tag
  
     def render_submitProblemForm(self, ctx, data):
         return ctx.tag(

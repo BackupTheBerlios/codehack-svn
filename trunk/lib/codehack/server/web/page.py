@@ -63,20 +63,29 @@ class StatusNotifier:
 
     DEFAULT = 'none'
 
-    def __init__(self):
+    def __init__(self, contest):
+        self.contest = contest # contest object (for time, age info)
         self._msg = self.DEFAULT
         self._error = False
+        self._messages = []  # List of ts, message, error tuple
 
     def info(self, info):
         "Information to be displayed in browser"
         self._msg = info
         self._error = False
+        self._messages.append([self._getAge(), info, False])
 
     def error(self, error):
         "Error to be displayed in browser"
         self._msg = error
         self._error = True
+        self._messages.append([self._getAge(), error, True])
 
+    def _getAge(self):
+        "Return contest age, -1 if contest isn't running"
+        if self.contest.isrunning() is False:
+            return -1
+        return self.contest.getContestAge()
 
     def _reset(self):
         self._msg = self.DEFAULT
@@ -85,12 +94,10 @@ class StatusNotifier:
     def render(self):
         msg, error = self._msg, self._error
         self._reset()
-        return msg
+        return msg, error
 
-    def send(self, mind, tagname):
-        msg, error = self._msg, self._error
-        self._reset()
-        mind.set(tagname, msg)
+    def getMessages(self):
+        return self._messages
 
 
 class MainPage(rend.Page):
@@ -119,7 +126,7 @@ class MainPage(rend.Page):
 
     def __init__(self, *args, **kwargs):
         super(MainPage, self).__init__(*args, **kwargs)
-        self.status = StatusNotifier()
+        self.status = StatusNotifier(self.mind.avatar.contest)
 
     def render_body(self, ctx, data):
         "On page load call self.mind.pageInit"
@@ -133,8 +140,24 @@ class MainPage(rend.Page):
     #
 
     def render_status(self, ctx, data):
-        return self.status.render()
+        msg, error = self.status.render()
+        if msg is None:
+            msg = ''
+        return ctx.tag(class_=["info", "error"][error])[msg]
 
+    def data_messages(self, ctx, data):
+        data = self.status.getMessages()[:]
+        data.reverse()
+        return data
+
+    def render_message_row(self, ctx, data):
+        print '*************', data
+        ts, msg, error = data
+        ctx.tag(class_=["info", "error"][error])
+        ctx.fillSlots("msg", msg)
+        ctx.fillSlots("ts", ts)
+        return ctx.tag
+        
     def render_logout(self, ctx, data):
         return ctx.tag(href=guard.LOGOUT_AVATAR)
 
