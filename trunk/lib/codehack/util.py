@@ -27,7 +27,7 @@ log = logging.getLogger(APP_NAME)
 hdlr = logging.StreamHandler()
 #formatter = logging.Formatter("%(name)s:: %(asctime)s %(levelname)s " 
 #                              "%(message)s")
-formatter = logging.Formatter("## %(levelname)s %(message)s")
+formatter = logging.Formatter(">> %(levelname)s %(message)s")
 hdlr.setFormatter(formatter)
 log.addHandler(hdlr)
 log.setLevel(logging.DEBUG)

@@ -145,10 +145,25 @@ class Contest(object):
         return team_avatars
 
     def avatars_add(self, avatarId, avatar):
+        "Called when an avatar logs in"
+        log.debug('Avatar [%s] logs in' % avatarId)
         self.avatars[avatarId] = avatar
         if self.avatars.has_key('admin'):
             # Notify admin
-            self.avatars['admin'].client_logged_in(avatarsId)
+            self.avatars['admin'].client_login_status_changed(avatarId)
+
+    def avatars_remove(self, avatarId):
+        "Called when an avatar logs out"
+        log.debug('Avatar [%s] logs out' % avatarId)
+        del self.avatars[avatarId]
+        if self.avatars.has_key('admin'):
+            # Notify admin
+            self.avatars['admin'].client_login_status_changed(avatarId)
+
+    def avatar_disconnect(self, avatarId):
+        "Disconnect an avatar"
+        transport = self.avatars[avatarId].mind.broker.transport
+        transport.loseConnection()
 
     def get_contest_age(self):
         "Return number of seconds since start of contest"

@@ -84,10 +84,14 @@ class AdminAvatar(pb.Avatar):
     def perspective_stop_contest(self):
         self.contest.stop_contest()
 
-    def client_loggedin(self):
-        "Notification when a client logins"
-        self.mind.callRemote('client_loggedin', 
+    def client_login_status_changed(self, avatarId):
+        "Notification when a client logs-in/logs-out"
+        self.mind.callRemote('login_status', 
                         self.perspective_get_clients())
+
+    def perspective_disconnect_client(self, avatarId):
+        "Disconnect a client"
+        self.contest.avatar_disconnect(avatarId)
     
     def perspective_get_clients(self):
         """Return logged in clients dict

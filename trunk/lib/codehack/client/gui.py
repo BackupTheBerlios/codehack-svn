@@ -45,6 +45,7 @@ class ClientGUI(GWidget):
         self.disconnect = disconnect
         self.widget.set_title('%s - Codehack %s' % (userid, usertype))
         self.perspective = perspective
+        self.perspective.notifyOnDisconnect(self._disconnected)
         # Status bar
         self._statuscontext = self['statusbar'].get_context_id('Client')
         self.set_status(READY) 
@@ -53,6 +54,11 @@ class ClientGUI(GWidget):
         
     def on_quit(self, *args):
         self.disconnect()
+        gtk.main_quit()
+        
+    def _disconnected(self, *args):
+        util.msg_dialog('You are disconnected from server', 
+                gtk.MESSAGE_ERROR)
         gtk.main_quit()
         
     def show(self, *args):

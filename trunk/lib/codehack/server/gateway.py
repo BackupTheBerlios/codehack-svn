@@ -49,8 +49,9 @@ class CodehackRealm:
         # Already logged in? then return the created Avatar.
         # TODO: better solution is to volunteerily logout the old avatar
         if avatarId in self.loggedin:
+            log.warn('Avatar %s logs in again!' % avatarId)
             return pb.IPerspective, self.loggedin[avatarId], lambda:None
-        
+
         def cb_user(uid):
             assert uid
             typ = uid['type']
@@ -68,9 +69,10 @@ class CodehackRealm:
             
             avatar = avatar_factory(mind, self.contest, int(time.time()),
                                 id, userid, emailid)
-            self.contest.client_loggedin(avatarId, avatar)
+            self.contest.avatars_add(avatarId, avatar)
             return pb.IPerspective, avatar, \
-                lambda : self.loggedin.__delitem__(avatarId)
+                lambda : self.contest.avatars_remove(avatarId)
+                #lambda : self.loggedin.__delitem__(avatarId)
             
         d = self.contest.dbproxy.users_get(avatarId)
         d.addCallback(cb_user)

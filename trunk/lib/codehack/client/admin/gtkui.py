@@ -98,9 +98,13 @@ class AdminGUI(gui.ClientGUI):
         "Called by mind on stop of contest"
         self._update_contest_ui(None, None, 0)
         
-    def _client_selected(self, tv, *args):
-        mdl, iter = tv.get_selection().get_selected()
+    def _get_selected_client(self):
+        mdl, iter = self['tv_logged'].get_selection().get_selected()
         userid = mdl.get_value(iter, 0)
+        return userid
+    
+    def _client_selected(self, tv, *args):
+        userid = self._get_selected_client()
         # Render info about userid
         typ, duration, duration_at = self.clients[userid]
         duration = duration + (time.time()-duration_at)
@@ -164,3 +168,9 @@ class AdminGUI(gui.ClientGUI):
     def on_but_logout__clicked(self, *args):
         self.on_quit()
         print 'Hey, don\'t forget to come back!'
+
+    def on_but_disconnect_client__clicked(self, *args):
+        userid = self._get_selected_client()
+        self.call_remote('Disconnecting %s' % userid, None, 
+                'disconnect_client', userid)
+        
