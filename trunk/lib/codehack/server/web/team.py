@@ -133,7 +133,8 @@ class NevowTeamMind(NevowMind):
 
     def submissionResult(self, result):
         def _cbUpdated(result):
-            self.page.status.info("Runs updated")
+            self.page.status.info(
+                "Result of run - %d" % len(self.submissions))
             self.js.reload()
         self.update_submissions().addCallback(_cbUpdated)
 
@@ -186,7 +187,7 @@ class TeamPage(page.MainPage):
             dct['run'] = index
             dct['problem'] = pr
             dct['language'] = lang
-            dct['result'] = res
+            dct['result'] = self.mind.results[res]
             dct['ts'] = ts
             data.append(dct)
             index = index + 1
