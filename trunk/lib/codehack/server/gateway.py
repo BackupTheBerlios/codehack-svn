@@ -32,109 +32,50 @@ from nevow import liveevil
 from nevow import guard
 
 from codehack.util import log
-from codehack.server.avatar import team, admin
-from codehack.server import db
+from avatar import team, admin
+import db
+import auth
 
+
+class DefaultMindAdaptor(object):
+    
+    "Adapts mind of twisted.spread client"
+    
+    def __init__(self, mind):
+        self.mind = mind
+        
+    def __getattr__(self, attr):
+        def proxy(*args, **kwargs):
+            self.mind.callRemote(attr, *args, **kwargs)
+        return proxy
 
 # twisted.cred Authorization framework
-class CodehackRealm:
+class Realm(auth.CodehackRealm):
 
     __implements__ = portal.IRealm
+    
+    interface = pb.IPerspective
+    mind_adaptor = {
+        db.USER_TEAM: DefaultMindAdaptor,
+        db.USER_ADMIN: DefaultMindAdaptor,
+        db.USER_JUDGE: DefaultMindAdaptor
+    }
     
     def __init__(self, contest):
         self.contest = contest
         self.liveavatars = contest.liveavatars
         
-    # Authorizes the avatar
-    def requestAvatar(self, avatarId, mind, *interfaces):
-        log.debug('LOGIN: ' + avatarId + ' Mind? ' + str(mind is not None))
-        if pb.IPerspective not in interfaces:
-            raise NotImplementedError
-
-        # Already logged in? then return the created Avatar.
-        # TODO: better solution is to volunteerily logout the old avatar
-        avatar = self.liveavatars.get(avatarId)
-        if avatar is not None:
-            log.warn('Avatar %s logs in again!' % avatarId)
-            return pb.IPerspective, avatar, lambda:None
-
-        d = self.contest.dbproxy.users_get(avatarId)
-        return d.addCallback(self.getAvatar, avatarId, mind)
-        return d
-        
-    def getAvatar(self, uid, avatarId, mind):
-        assert uid
-        typ = uid['type']
-        emailid = uid['emailid']
-        id1 = uid['id']
-        userid = uid['userid']
-        
-        typ_map = {
-            db.USER_TEAM: team.TeamAvatar,
-            db.USER_JUDGE: None, #judge.JudgeAvatar,
-            db.USER_ADMIN: admin.AdminAvatar
-        }
-        try:
-            avatar_factory = typ_map[typ]
-        except KeyError:
-            raise RuntimeError, 'Invalid type returned by database'
-            
-        avatar = avatar_factory(mind, self.contest, int(time.time()),
-                                id1, userid, emailid)
-        self.liveavatars.add(avatarId, avatar)
-        return pb.IPerspective, avatar, \
-                lambda : self.liveavatars.remove(avatarId)
-            
-
-# twisted.cred Authentication framework
-class CodehackChecker:
-
-    __implements__ = checkers.ICredentialsChecker
-    
-    credentialInterfaces = (credentials.IUsernamePassword,
-        credentials.IUsernameHashedPassword)
-    
-    def __init__(self, dbproxy):
-        self.dbproxy = dbproxy
-    
-    # Authenticates given credential information
-    def requestAvatarId(self, cred):
-        """Return the avatar id of the avatar which can be accessed using
-        the given credentials.
-
-        credentials will be an object with username and password attributes
-        we need to raise an error to indicate failure or return a username
-        to indicate success. requestAvatar will then be called with the avatar
-        id we returned.
-        """
-        log.debug('Checking up credentials for ' + cred.username)
-        d = self.dbproxy.users_get(cred.username)
-        return d.addCallback(self.verify, cred)
-
-    def verify(self, uid, cred):
-        log.debug('uid = ' + str(uid))
-        if uid is None:
-            # No user with that name found
-            # return error.UnauthorizedLogin()
-            return failure.Failure(error.UnauthorizedLogin())
-        return defer.maybeDeferred(
-            cred.checkPassword, uid['passwd']).addCallback(
-            self._cbPasswordMatch, cred.username)
-
-    def _cbPasswordMatch(self, matched, username):
-        if matched:
-            return username
-        else:
-            return failure.Failure(error.UnauthorizedLogin())
+    def requestThisAvatar(self, avatarId, mind, remove_f):
+        return self.interface, self.liveavatars.get(avatarId), remove_f
 
 def getApplication(contest, port, backlog=500, backlog_web=500):
     """"Return application that must be run
     .tac file calls this function"""
     app = service.Application('codehack')
     
-    realm = CodehackRealm(contest)
+    realm = Realm(contest)
     portal_ = portal.Portal(realm)
-    portal_.registerChecker(CodehackChecker(contest.dbproxy))
+    portal_.registerChecker(auth.CodehackChecker(contest.dbproxy))
     
     # The Distributed service (twisted.spread)
     coreservice = internet.TCPServer(port, pb.PBServerFactory(portal_), backlog)
@@ -142,15 +83,14 @@ def getApplication(contest, port, backlog=500, backlog_web=500):
     
     # The Web service (nevow)
     from web import test
-    realm = test.WebRealm()
-    myChecker = CodehackChecker(contest.dbproxy)
+    realm = test.WebRealm(contest)
+    myChecker = auth.CodehackChecker(contest.dbproxy)
     portal_ = portal.Portal(realm)
     portal_.registerChecker(myChecker)
-    portal_.registerChecker(checkers.AllowAnonymousAccess(), credentials.IAnonymous)
-    # site = appserver.NevowSite(MainPage())
-    site = appserver.NevowSite(
-        resource=guard.SessionWrapper(portal_)
-    )
+    portal_.registerChecker(
+        checkers.AllowAnonymousAccess(), credentials.IAnonymous)
+    site = appserver.NevowSite(resource=guard.SessionWrapper(
+        portal_, mindFactory=liveevil.LiveEvil) )
     webservice = internet.TCPServer(8080, site, backlog_web)
     webservice.setServiceParent(app)
     

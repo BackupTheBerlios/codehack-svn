@@ -236,9 +236,9 @@ class AdminAvatar(pb.Avatar):
     
     def contestStopped(self):
         "Callback on contest stop"
-        self.mind.callRemote('contestStopped')
+        self.mind.contestStopped()
     
     def liveClientsChanged(self):
         "Notification when a client logs-in/logs-out"
-        self.mind.callRemote('liveClients', 
+        self.mind.liveClients(
                         self.perspective_getLiveClients())

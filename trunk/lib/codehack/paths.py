@@ -17,6 +17,8 @@
 """Filesystem paths to project directories like lib/ data/ .."""
 
 from os.path import abspath
+from os.path import join as j
+
 
 # TODO: use distutils to auto-generate PATHs
 
@@ -25,3 +27,4 @@ from os.path import abspath
 LIB_DIR = abspath('lib')
 DATA_DIR = abspath('data')
 
+WEB_DIR = abspath(j(LIB_DIR, 'codehack', 'server', 'web', 'templates'))

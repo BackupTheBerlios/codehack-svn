@@ -161,7 +161,7 @@ class AbstractContestProfile(object):
             dct = {}
             for ky in ('problem', 'ts', 'result', 'language'):
                 dct[ky] = sid[ky]
-            team.mind.callRemote('submissionResult', dct)
+            team.mind.submissionResult(dct)
             return result
 
         result = self.submit(team, input_dict, problem, language,

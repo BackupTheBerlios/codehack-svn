@@ -30,7 +30,8 @@ from codehack.server import db
 
 class TeamAvatar(pb.Avatar):
 
-    def __init__(self, mind, contest, loginat, id, userid, emailid):
+    def __init__(self, mind, contest, loginat, id, userid, emailid,
+                 webclient=False):
         """
         @param mind:    Client remote object
         @param contest: The contest object
@@ -47,6 +48,7 @@ class TeamAvatar(pb.Avatar):
         self.userid = userid
         self.emailid = emailid
         self.contest = contest
+        self.webclient = webclient
         self.profile = contest.profile
         self.dbproxy = contest.dbproxy
         self.notify_defer = None  # whether client is waiting
@@ -168,11 +170,11 @@ class TeamAvatar(pb.Avatar):
         "Notification on start of contest"
         self.contest_started = True
         # Inform client
-        self.mind.callRemote('contestStarted', self.contest.name,
+        self.mind.contestStarted(self.contest.name,
                              self._contestDetails())
 
     def contestStopped(self):
         "Notification on stop of contest"
         self.contest_started = False
         # notify client
-        self.mind.callRemote('contestStopped')
+        self.mind.contestStopped()
