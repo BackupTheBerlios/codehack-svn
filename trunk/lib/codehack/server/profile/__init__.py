@@ -115,9 +115,9 @@ class AbstractContestProfile(object):
                                 self.contest.name,
                                     self.score_cache, fullstats)
             #reactor.callLater(self.score_refresh_interval, self._gen_score)
-        df = self._get_all_submissions()
-        df.addCallback(done)
-        return df
+        d = self.contest.getTeamAvatars()
+        return d.addCallback(
+            lambda teams: self.get_submissions_for(teams).addCallback(done))
 
     # Final implementations
     def submit_complete(self, team, input_dict,
@@ -143,7 +143,7 @@ class AbstractContestProfile(object):
 
         def followon2(ign, result, sid):
             "(Re-)Calculate scores and updates boards"
-            subs_defer = self.get_submissions(team)
+            subs_defer = self.get_submissions(team.id)
             def done(score):
                 score_object = self.calculateScore(team, score)
                 # store in cache for later reference
@@ -181,7 +181,7 @@ class AbstractContestProfile(object):
             return followon1(result)
         
 
-    def get_submissions(self, team, fromproblem=None, returnobject=None):
+    def get_submissions(self, team_dbid, fromproblem=None, returnobject=None):
         """Return all submissions of `team`
         
         See self.calculateScore for return object details
@@ -208,7 +208,7 @@ class AbstractContestProfile(object):
                 sorted.append(pr)
             return sorted
         df = self.contest.dbproxy.submissions_get_ex(
-                            {'users_id': team.id,
+                            {'users_id': team_dbid,
                              'problem': fromproblem}, multiple=True)
         def proxy(result):
             if result:
@@ -220,25 +220,26 @@ class AbstractContestProfile(object):
                 returnobject.append(subs)
             else:
                 returnobject.append(None)
-            return self.get_submissions(team, fromproblem+1, returnobject)
+            return self.get_submissions(team_dbid, fromproblem+1, returnobject)
         df.addCallback(proxy)
         return df
 
-    def _get_all_submissions(self, users=None, fullstats=None):
-        """Return all submissions of all teams
+    def get_submissions_for(self, users, fullstats=None):
+        """Return all submissions of specified users 
         
-        Don't use users and fullstats
+        users: List of (id, userid)
+        Don't use fullstats
         See self.calculateScore for return object details
         """
-        if users is None:
+        if fullstats is None:
             fullstats = {}
-            users = self.contest.avatars.keys()
         if len(users) == 0:
             return fullstats
-        df = self.get_submissions(self.contest.avatars[users[0]])
-        def done(result, user):
-            fullstats[user] = result
-            return self._get_all_submissions(users, fullstats)
-        df.addCallback(done, users[0])
+        uid, userid = users[0]
+        df = self.get_submissions(uid)
+        def done(result, uid, userid):
+            fullstats[userid] = result
+            return self.get_submissions_for(users, fullstats)
+        df.addCallback(done, uid, userid)
         users = users[1:]
         return df

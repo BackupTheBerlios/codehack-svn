@@ -51,6 +51,8 @@ class TeamAvatar(pb.Avatar):
         self.dbproxy = contest.dbproxy
         self.notify_defer = None  # whether client is waiting
         self.contest_started = False
+        self._last_submitted_ts = -1  # Timestamp of last submitted problem
+                                      # Used to avoid duplicate timestamps
         if contest.isrunning():
             self.contestStarted()
 
@@ -82,7 +84,7 @@ class TeamAvatar(pb.Avatar):
                         subs_full.append((ts, prob, lang, result))
             subs_full.sort()
             return subs_full
-        defer = self.profile.get_submissions(self)
+        defer = self.profile.get_submissions(self.id)
         defer.addCallback(done)
         return defer
 
@@ -137,8 +139,14 @@ class TeamAvatar(pb.Avatar):
         """Submit a problem"""
         if not self.contest_started:
             return None
-        log.debug('SUBMIT: %d - %s' % (problem_no, problem_lang) )
         ts = self.contest.get_contest_age()
+        # If this submission was in the same second as before ..
+        if ts == self._last_submitted_ts:
+            ts = ts + 1  # add one second to make timestamps unique!
+        self._last_submitted_ts = ts
+
+        log.debug('SUBMIT: %d - %s' % (problem_no, problem_lang) )
+
         # FIXME: renaming doesn't work for Java programs !!
         filename = 'p%d.%s' % (problem_no, \
                     self.profile.getLanguages()[problem_lang][2][0])
@@ -149,6 +157,7 @@ class TeamAvatar(pb.Avatar):
             'inpath': filepath,
             'in': os.path.splitext(os.path.split(filepath)[1])[0]
         }
+
         reactor.callLater(0,self.profile.submit_complete,
                           self, input_dict, problem_no, problem_lang,
                           ts, workdir)

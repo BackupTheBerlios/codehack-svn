@@ -91,6 +91,15 @@ class DBProxy(object):
         }
         self.conn = None
     
+    # Proxy methods, sometimes useful for debugging
+    def runQuery(self, query, *args):
+        # log.debug('SQL_Query: [%s], {%s}' % (query, args))
+        return self.conn.runQuery(query, *args)
+
+    def runOperation(self, query, *args):
+        # log.debug('SQL_Op: [%s], {%s}' % (query, args))
+        return self.conn.runOperation(query, *args)
+
     # The following _TABLE_* are template methods
     # For each such method (_TABLE_get for eg), methods like
     # <tablename>_get will be created that will just wrap this method
@@ -130,8 +139,8 @@ class DBProxy(object):
             set_value_list.append(val)
         
         query = 'SELECT * FROM ' + table + ' where '+ \
-                    'AND '.join(set_list)
-        d = self.conn.runQuery(query, *set_value_list)
+                    ' AND '.join(set_list)
+        d = self.runQuery(query, *set_value_list)
         d.addCallback(fmt_result)
         return d
         
@@ -184,7 +193,7 @@ class DBProxy(object):
         
         query = 'UPDATE ' + table + ' set ' + ', '.join(set_list) + \
                 ' where ' + query_cond
-        d = self.conn.runOperation(query, *set_value_list)
+        d = self.runOperation(query, *set_value_list)
         return d
         
 
@@ -193,17 +202,28 @@ class DBProxy(object):
         query_cond = self._id_query_cond(table, identity, self.seckey[table])
         
         query_str = 'DELETE from ' + table + ' WHERE ' + query_cond
-        d = self.conn.runOperation(
+        d = self.runOperation(
             query_str, identity)
         return d
     
-    def _TABLE_get_all(self, table):
+    def _TABLE_get_all(self, table, tid=None):
         """Get list of all rows.
-        
+        @param tid: col=value condition pairs in dictionary
         @returns: list of IDs
         """
         query_str = 'SELECT * from %s' % table
-        d = self.conn.runQuery(query_str)
+        if tid is not None and len(tid) > 0:
+            # Create list of where conditions
+            set_list = []
+            set_value_list = []
+            for ky, val in tid.items():
+                set_list.append(ky + ' = %s')
+                set_value_list.append(val)
+        if len(set_list) > 0:    
+            query_str = query_str + ' where '+ \
+                        ' AND '.join(set_list)
+        d = self.runQuery(query_str, *set_value_list)
+
         def got_result(results):
             ids = {}
             for result in results:
@@ -212,8 +232,8 @@ class DBProxy(object):
                     result_dict[attr] = value   
                 ids[result['id']] = result_dict
             return ids
-        d.addCallback(got_result)
-        return d
+
+        return d.addCallback(got_result)
     
     # Then the following methods cannot be curried as above are
     # 
@@ -224,7 +244,7 @@ class DBProxy(object):
         @param uid: UID for new user
         """
         query_str = 'INSERT into users values(NULL, %s, %s, %s, %s, %s, %s)'
-        d = self.conn.runOperation(query_str, 
+        d = self.runOperation(query_str, 
                     uid['userid'],
                     uid['passwd'],
                     uid['name'],
@@ -239,7 +259,7 @@ class DBProxy(object):
         @param sid: SID for new submission
         """
         query_str = 'INSERT into submissions values(NULL, %s, %s, %s, %s, %s)'
-        d = self.conn.runOperation(query_str, 
+        d = self.runOperation(query_str, 
                     sid['users_id'],
                     sid['problem'],
                     sid['language'],

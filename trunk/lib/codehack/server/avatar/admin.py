@@ -47,6 +47,7 @@ class AdminAvatar(pb.Avatar):
         log.debug('AdminAvatar created - %s' % id)
         self.mind = mind
         self.id = id
+        self.userid = userid
         self.emailid = emailid
         self.contest = contest
         self.dbproxy = contest.dbproxy

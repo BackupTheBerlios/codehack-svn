@@ -28,7 +28,7 @@ from twisted.internet import reactor
 from codehack import paths
 from codehack.util import log
 from codehack.server.db import SqliteDBProxy
-from codehack.server.db import USER_ADMIN
+from codehack.server.db import USER_ADMIN, USER_TEAM
 
 from avatar.team import TeamAvatar
 
@@ -201,6 +201,16 @@ class Contest(object):
             avatar.contestStopped()
         log.info('Contest stopped')
 
+    def getTeamAvatars(self):
+        "Return the list of all (DBid, Team AvatarIds) from database"
+        def _cbGotUsers(teams):
+            avatarIds = []
+            for dbid, team in teams.items():
+                avatarIds.append((dbid, team['userid']))
+            return avatarIds
+        d = self.dbproxy.users_get_all({'type': str(USER_TEAM)})
+        return d.addCallback(_cbGotUsers)
+    
     def isrunning(self):
         """Whether contest is running?"""
         return self._duration is not None
@@ -219,11 +229,18 @@ class Contest(object):
         """
         # Create directory if doesn't exist
         instantid = str(instantid)
-        userdir = join(self.directory, avatar.whoami, avatar.userid, instantid)
-        if os.path.isdir(userdir):
-            raise RuntimeError, '%s under %s already exists!!' % \
-                                (instantid, avatar.whoami)
+        userdir_parent = join(self.directory, avatar.whoami, avatar.userid)
+        userdir = join(userdir_parent, instantid)
+
+        # If the instantid is not unique, modify it by prepending it
+        # with sequence number
+        old_instantid, seq_num = instantid, 1
+        while os.path.isdir(userdir):
+            instantid = old_instantid + '-' + str(seq_num)
+            userdir = join(userdir_parent, instantid)
+            seq_num = seq_num + 1
         os.makedirs(userdir)
+
         # Create file named filename with content filecontent
         filename = join(userdir, filename)
         fh = file(filename, 'w')
