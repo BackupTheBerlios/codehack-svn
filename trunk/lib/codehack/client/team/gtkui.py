@@ -74,8 +74,8 @@ class ProblemPanel(gtk.VBox):
             self.pack_start(item, expand=False)
         
         self.pack_start(gtk.HSeparator())
-        
-        self.selection_directory = '.'  # Directory of last selected program
+        # Directory of last selected program
+        self.selection_directory = os.path.abspath(os.path.curdir)  
         
     def set_status(self, status):
         "Set problem status"
@@ -97,6 +97,8 @@ class ProblemPanel(gtk.VBox):
             (gtk.STOCK_CANCEL, gtk.RESPONSE_CANCEL,
             gtk.STOCK_OPEN, gtk.RESPONSE_OK))
         dialog.set_default_response(gtk.RESPONSE_OK) 
+        # set last opened directory
+        dialog.set_current_folder(self.selection_directory)
         
         # Extension filters
         # TODO: set filter for each language supported
@@ -108,6 +110,9 @@ class ProblemPanel(gtk.VBox):
         filename = dialog.get_filename()
         dialog.destroy()
         if response == gtk.RESPONSE_OK:
+            # save selection directory for future use
+            directory = os.path.split(filename)[1]
+            self.selection_directory = os.path.abspath(directory)
             return filename
         elif response == gtk.RESPONSE_CANCEL:
             return None

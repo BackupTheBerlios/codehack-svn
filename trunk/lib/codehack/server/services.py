@@ -27,6 +27,8 @@ import os.path
 from twisted.internet import protocol, error
 from twisted.internet import defer, reactor
 
+from codehack.util import log
+
 
 class SimplePP(protocol.ProcessProtocol):
     
@@ -54,13 +56,14 @@ class SimplePP(protocol.ProcessProtocol):
 def system(callback, executable, args):
     "Asynchronous version of os.system using twisted's ProcessProtocol"
     pp = SimplePP(callback)
-    print 'system:', executable, args
+    log.debug('system exe:[%s] args:[%s]' % (executable, args))
     reactor.spawnProcess(pp, executable, args)
  
 def _safe_exec(cmd_line, work_dir='.', res_limit_args=None):
     "Return executable, args for safeexec.py that will execute cmd_line"
     safe_wrapper_script = \
         os.path.join(os.path.split(__file__)[0], 'safeexec.py')
+    # FIXME: ugly hack!
     executable = '/usr/bin/python'
     args = ['python', safe_wrapper_script, cmd_line, work_dir]
     if res_limit_args:
@@ -69,13 +72,12 @@ def _safe_exec(cmd_line, work_dir='.', res_limit_args=None):
     
 def safe_system(callback, cmd_line, work_dir='.', res_limit_args=None):
     "Safe version of `system` that uses wrapper script"
-    print 'safe_system::::::::'
     executable, args = _safe_exec(cmd_line, work_dir, res_limit_args)
-    print '**', executable, args
     import os
     system(callback, executable, args)
 
 def safe_spawn(pp, cmd_line, work_dir='.', res_limit_args=None):
     "Safe version of reactor.spawnProcess"
     executable, args = _safe_exec(cmd_line, work_dir, res_limit_args)
+    log.debug('safe_spawn exe:[%s] args:[%s]' % (executable, args))
     reactor.spawnProcess(pp, executable, args)

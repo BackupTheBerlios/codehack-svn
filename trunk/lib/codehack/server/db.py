@@ -28,7 +28,7 @@ import pickle
 
 from twisted.enterprise import adbapi
 
-from codehack.util import reverse_dict
+from codehack.util import reverse_dict, log
 
 # Enumerated values of 'type' field of the user table
 USER_TEAM = 0
@@ -130,7 +130,6 @@ class DBProxy(object):
         
         query = 'SELECT * FROM ' + table + ' where '+ \
                     'AND '.join(set_list)
-        # print '**get_ex:', query, set_value_list
         d = self.conn.runQuery(query, *set_value_list)
         d.addCallback(fmt_result)
         return d
@@ -239,7 +238,6 @@ class DBProxy(object):
         @param sid: SID for new submission
         """
         query_str = 'INSERT into submissions values(NULL, %s, %s, %s, %s, %s)'
-        print '@@@: sub_add', sid
         d = self.conn.runOperation(query_str, 
                     sid['users_id'],
                     sid['problem'],
@@ -328,7 +326,7 @@ for method in ['get_all', 'get_ex', 'get', 'update', 'remove']:
             # bcoz, otherwise table argument will be refered only during call
             attr = '%s_%s' % (table, method)
             comm_attr = getattr(DBProxy, '_TABLE_%s' % method)
-            print '$$', attr
+            log.debug('Creating DB method: %s', attr)
             setattr(DBProxy, attr, lambda self, *args, **kwargs: \
                     comm_attr(self, table, *args, **kwargs))
         proxy_setter(tablename)

@@ -147,7 +147,6 @@ class Contest(object):
     def get_contest_age(self):
         "Return number of seconds since start of contest"
         assert self.isrunning() is True, 'Contest is not running!!'
-        print 'AGE:', self.isrunning(), self._ts_start
         return int(time.time()) - self._ts_start
     
     def start_contest(self, duration):

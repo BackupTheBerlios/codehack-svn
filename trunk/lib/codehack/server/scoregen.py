@@ -81,12 +81,9 @@ class RankingsGen(object):
         score_tuple.sort()       # sort ..
         score_tuple.reverse()    # .. in ascending order!
         
-        print '**st', score_tuple
         for score, userid in score_tuple:
             pr_status = []
-            print '\t**', userid, score
             for prinfo in submissions_dict[userid]:
-                print '\t\t**', prinfo
                 if prinfo and len(prinfo) > 0:
                     if prinfo[-1][3] == self.acc_result:
                         pr_status.append(1)  # ACC
