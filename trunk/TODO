@@ -11,6 +11,10 @@ Bugs
                    also ScrolledWindow warning is new in pygtk-2.4 
                    side-effect?
     * Nevow: self.mind.set doesn't work in result callback in team mind
+    * Nevow: HTML templates - javascript - alert before submitting
+             a file that doesn't exists.  If not, then the file is 
+             submitted with compilation error (as the file content
+             would be empty!) - so 2 bugs!
 
 ISSUES to be solved
 ===================

@@ -24,6 +24,9 @@ class NevowAdminMind(object):
     def __init__(self, mind, avatar):
         self.mind = mind
         self.avatar = avatar
+
+    def init(self):
+        pass
         
     def info(self, msg):
         """Message from server"""

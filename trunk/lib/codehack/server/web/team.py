@@ -42,6 +42,7 @@ class NevowTeamMind(object):
         result = self.avatar.perspective_getInformation()
         self.update_details(result['isrunning'], result['name'],
                             result['details'])
+        return self.update_submissions()
 
     def update_details(self, isrunning, name, details=None):
         self.isrunning = isrunning
@@ -68,6 +69,9 @@ class NevowTeamMind(object):
             return 'Contest is not running. You cannot upload file.'
         if not '.' in filename:
             return 'Filename should have an extension'
+        splits = filename.split('.')
+        if len(splits) != 2:
+            return 'Invalid fileame. Cannot contain multiple . character'
         progname, ext = filename.split('.')
         try:
             no = int(progname[1:])
@@ -108,9 +112,15 @@ class NevowTeamMind(object):
 
     def submissionResult(self, result):
         def _cbGot(result):
-            stanobj = self.runsHTML()
-            print '****', stanobj
-            self.mind.flt('runs', stanobj)
+            # FIXME: this liveevil stuff not working!
+            # stanobj = self.runsHTML()
+            # self.mind.flt('runs', stanobj)
+
+            # Since the above doesn't work :(, we got for a full
+            # page reload!
+            # render_ method will take care of displaying the
+            # new data
+            self.mind.sendScript('window.location.reload()')
         return self.update_submissions().addCallback(_cbGot)
 
     def contestStopped(self):

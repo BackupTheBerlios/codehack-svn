@@ -45,6 +45,9 @@ class DefaultMindAdaptor(object):
         self.mind = mind
         self.avatar = avatar
 
+    def init(self):
+        pass
+
     def __getattr__(self, attr):
         def proxy(*args, **kwargs):
             self.mind.callRemote(attr, *args, **kwargs)

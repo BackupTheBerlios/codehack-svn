@@ -17,14 +17,18 @@ Brief architecture
 	* a new contest is created
 		$ ./codehack.py --newcontest <contest_name>
 	* server is started
-	    : Set contest parameters in profile.py	(eg., 'contest_name' variable)
+	    : Set contest parameters in profile.py	
+        (eg., 'contest_name' variable - must be set)
         $ twisted -noy startserver.tac
 	* different types of users (clients)
 		- admin : who configures the contest
 		- judge : for now, he takes care of answering queries [1]
 		- team  : contest team
 	* client logins
-		$ ./codehack.py -c
+		1. $ ./codehack.py -c (desktop client)
+        2. Point your browser to http://localhost:8080/ (web client)
+
+'judge' is not yet implemented
 
 Currently there will be an admin account
 	# userid: admin

@@ -38,7 +38,17 @@ class CodehackRealm:
     __implements__ = portal.IRealm
     
     interface = None
-    mind_adaptor = {} # team->adaptor
+    # Mind Adaptor
+    #
+    # Avatars are given the instance of Mind adaptor
+    # Mind adators adapts the original adaptor
+    # Method call (remote_*) on mind is simply through ordinary
+    # method call on the Mind Adaptor
+    #
+    # init() method in Mind Adaptor is special that it will created
+    # immediately after instanciating it.  Any long opertions (if any)
+    # must be performed in init(), which can return deferred object.
+    mind_adaptor = {} 
     
     def __init__(self, contest):
         self.contest = contest
@@ -79,12 +89,20 @@ class CodehackRealm:
         avatar = avatar_factory(mind, self.contest, 
                                 int(time.time()), id1, userid, emailid)
         mind = self.mind_adaptor[typ](mind, avatar)
-        avatar.ready(mind)
+        d = mind.init()
+        def _mindInitialized(result):
+            # Now initialize avatar
+            avatar.ready(mind)
+            
+            # Add to liveavatars registry
+            self.liveavatars.add(avatarId, avatar)
+            remove_f = lambda : self.liveavatars.remove(avatarId)
+            return self.requestThisAvatar(avatarId, mind, remove_f)
 
-        # Add to liveavatars registry
-        self.liveavatars.add(avatarId, avatar)
-        remove_f = lambda : self.liveavatars.remove(avatarId)
-        return self.requestThisAvatar(avatarId, mind, remove_f)
+        # mind.init returns None, if not deferred
+        if d is None:
+            return _mindInitialized(None)
+        return d.addCallback(_mindInitialized)
     
     def requestAnonymousAvatar(self, mind):
         raise NotImplementedError("Anonymous login not allowed")

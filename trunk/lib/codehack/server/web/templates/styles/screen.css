@@ -8,7 +8,7 @@
 /* ##### Common Styles ##### */
 
 body {
-  font-family: verdana, helvetica, arial, sans-serif;    
+  font-family: sans-serif;    
   background-color: #fffedb;
 }
 
@@ -110,8 +110,8 @@ p {
   margin-left: -10px;
 }
 
-.filler {  /* use with an empty <p> element to add padding to the end of a text box */
-  background-color: yellow;
+.run {
+  background-color: green;
   border: 1px solid blue;
 }
 
