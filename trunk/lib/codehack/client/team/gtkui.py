@@ -84,6 +84,8 @@ class ProblemPanel(gtk.VBox):
         
     def _get_language(self, filename):
         "Return the corresponding language for extension"
+        if not filename or not os.path.isfile(filename):
+            return None # not a file
         ext = os.path.splitext(filename)[1][1:]
         for lang, extensions in self.info['languages'].items():
             if ext in extensions:
@@ -92,13 +94,24 @@ class ProblemPanel(gtk.VBox):
         
     def _get_filename_from_user(self):
         "Return user seleted file"
-        dialog = gtk.FileChooserDialog("Open..",
+        dialog = gtk.FileChooserDialog("Choose program to send ...",
             self.gui.widget, gtk.FILE_CHOOSER_ACTION_OPEN,
             (gtk.STOCK_CANCEL, gtk.RESPONSE_CANCEL,
             gtk.STOCK_OPEN, gtk.RESPONSE_OK))
+        # TODO: how to set custom label for 'Open' button?
         dialog.set_default_response(gtk.RESPONSE_OK) 
         # set last opened directory
         dialog.set_current_folder(self.selection_directory)
+
+        # show preview widget - file info, lang, problem
+        info = gtk.Label('')
+        dialog.set_preview_widget(info)
+        def sel_changed(wid, *args):
+            filename = wid.get_preview_filename()
+            lang = self._get_language(filename)
+            info.set_markup("<b>%s</b>\n<i>%s</i>" % (self.pr_text,
+                            lang or '(Invalid)'))
+        dialog.connect('selection-changed', sel_changed)
         
         # Extension filters
         # TODO: set filter for each language supported
@@ -133,14 +146,6 @@ class ProblemPanel(gtk.VBox):
                             '\n\n' + \
                             'File extensions allowed are:\n' + \
                             ext_info, gtk.MESSAGE_ERROR)
-            return
-        # confirm with user.
-        info_str = 'Submit for %s' % self.pr_text + '\n' + \
-                   'File: %s\n' % filename + \
-                   'Language: %s\n' % language
-        res = util.msg_dialog(info_str, gtk.MESSAGE_QUESTION, \
-                            gtk.BUTTONS_YES_NO)
-        if res != gtk.RESPONSE_YES:
             return
         def done(result):
             #if result:
