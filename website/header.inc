@@ -75,6 +75,8 @@
 
       <div class="rightSideBar">
         <p class="sideBarTitle">News</p>
+        <div class="sideBarText"><strong>11 Nov 04</strong><br />
+          Screenshots are available now!</div>
 
         <div class="sideBarText"><strong>22 Oct 04</strong><br />
           Uploaded codehack website</div>
