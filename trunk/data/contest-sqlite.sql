@@ -24,7 +24,7 @@ CREATE TABLE submissions
     id INTEGER PRIMARY KEY,
     users_id INTEGER,
     problem INTEGER,
-    language INTEGER,
+    language TEXT,
     ts INTEGER UNIQUE,
     result INTEGER
 );

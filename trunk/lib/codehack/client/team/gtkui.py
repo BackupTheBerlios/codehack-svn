@@ -236,7 +236,7 @@ class TeamSubmissions(object):
             result = self.gui.info['results'][result]
             result = result.split('-',1)[0].strip()
             ts = str(ts)
-            lang = 'FIXME' # self.gui.info['languages'][lang]
+            lang = lang
             row = [str(run_no), pname, result, lang, ts]
             self.runs.append(row)
             run_no = run_no + 1

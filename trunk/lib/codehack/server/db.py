@@ -239,6 +239,7 @@ class DBProxy(object):
         @param sid: SID for new submission
         """
         query_str = 'INSERT into submissions values(NULL, %s, %s, %s, %s, %s)'
+        print '@@@: sub_add', sid
         d = self.conn.runOperation(query_str, 
                     sid['users_id'],
                     sid['problem'],
