@@ -15,6 +15,7 @@ ISSUES to be solved
     * Use of 'submission' id as mode of pointing out particular submission
     * Quitting and starting the server for same contest - should it resume 
       last contest or restart it from beginning?
+    * Should pc2 style of manual execution of runs be supported?
 
 Definite enhancements
 =====================
