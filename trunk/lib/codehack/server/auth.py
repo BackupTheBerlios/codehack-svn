@@ -46,8 +46,8 @@ class CodehackRealm:
         
     # Authorizes the avatar
     def requestAvatar(self, avatarId, mind, *interfaces):
-        print '****', avatarId
-        log.debug('LOGIN: ' + avatarId + ' Mind? ' + str(mind is not None))
+        if type(avatarId) is str:
+            log.debug('LOGIN: ' + avatarId + ' Mind? ' + str(mind is not None))
         for iface in interfaces:
             if iface is self.interface:
                 if avatarId is checkers.ANONYMOUS:
@@ -77,6 +77,7 @@ class CodehackRealm:
         mind = self.mind_adaptor[typ](mind)
         avatar = avatar_factory(mind, self.contest, 
                                 int(time.time()), id1, userid, emailid)
+        mind.avatar = avatar
         self.liveavatars.add(avatarId, avatar)
         remove_f = lambda : self.liveavatars.remove(avatarId)
         return self.requestThisAvatar(avatarId, mind, remove_f)

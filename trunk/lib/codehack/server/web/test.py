@@ -30,6 +30,7 @@ from nevow import tags as T
 from nevow import liveevil
 from nevow import inevow
 from nevow import guard
+from nevow import url
 
 from codehack import paths
 from codehack.server import auth
@@ -43,18 +44,26 @@ class NevowTeamMind(object):
         
     def info(self, msg):
         """Message from server"""
-        pass
+        self.mind.set('info', msg)
 
-    def submissionResult(self, r):
-        pass
-        # self.gui.showSubmissionResult(r['problem'], r['language'], r['ts'], r['result'])
+    def submissionResult(self, result):
+        d = self.avatar.perspective_getSubmissions()
+        def _cbGot(submissions):
+            s = ''
+            for run in submissions:
+                ts, pr, lang, res = run
+                s = s + '%d Seconds, Problem %d, Lang %s, Result %d -- ' % (ts, pr, lang, res)
+            self.mind.set('runs', T.b[s])
+        return d.addCallback(_cbGot)
 
     def contestStopped(self):
         self.mind.sendScript('alert("Stopped");')
         # self.gui.contestStopped()
 
     def contestStarted(self, name, details):
+        s = str(dir(self.mind))
         self.mind.sendScript('alert("Started");')
+        self.info(T.i[s])
         # self.gui.contestStarted(name, details)
 
 
@@ -98,30 +107,12 @@ class WebRealm(auth.CodehackRealm):
     
     def requestThisAvatar(self, avatarId, mind, remove_f):
         resc = MainPage(self.liveavatars.get(avatarId), mind)
+        # mind.avatar = resc
         def logout():
             resc.logout()
             remove_f()
         return self.interface, resc, logout
-    
-    def WWrequestAvatar(self, avatarId, mind, *interfaces):
-        for iface in interfaces:
-            if iface is inevow.IResource:
-                if avatarId is checkers.ANONYMOUS:
-                    resc = LoginPage()
-                    logout = lambda : None
-                else:
-                    from codehack.server.avatar import team, admin
-                    avatar = team.TeamAvatar(
-                        mind, self.contest, int(time.time()), id1, 
-                        userid, emailid, webclient=True)
-                    resc = MainPage(avatarId)
-                    resc.mind = mind
-                    self.liveavatars.add(avatarId, avatar)
-                    logout = lambda : self.liveavatars.remove(avatarId)
-                resc.realm = self
-                return (inevow.IResource, resc, logout)
- 
-        raise NotImplementedError("Can't support that interface.")
+
         
 def web_file(fil):
     return join(paths.WEB_DIR, fil)
@@ -139,6 +130,7 @@ class LoginPage(rend.Page):
     def logout(self):
         pass
 
+SUBMIT = '_submit'
 
 class MainPage(rend.Page):
 
@@ -149,9 +141,34 @@ class MainPage(rend.Page):
         self.avatar = avatar
         self.mind = mind
 
+    def locateChild(self, ctx, segments):
+ 
+        if segments[0] == SUBMIT:
+            fields = inevow.IRequest(ctx).fields
+            filecontent = fields.getvalue('source')
+            self.mind.info('<b>File:</b>' + filecontent + fields['source'].filename)
+            d = self.avatar.perspective_submitProblem(0, filecontent, 'Python')
+            # Redirect away from the POST
+            return url.URL.fromRequest(inevow.IRequest(ctx)), ()
+        return rend.Page.locateChild(self, ctx, segments)
+
     def render_loginname(self, ctx, data):
         return self.avatar.userid
-
+        
+    def render_status(self, ctx, data):
+        i = self.avatar.perspective_getInformation()
+        if not i['isrunning']:
+            return T.b['Contest is NOT running']
+        name = i['name']
+        i = i['details']
+        # duration, age, problems, languages, results, result_acc_index
+        html = T.p[T.h3['Problems'], T.i[str(i['problems'])], \
+                T.h3['Duration'], T.i[str(i['duration'])]]
+        return html
+        
+    def render_submitProblemForm(self, ctx, data):
+        return ctx.tag(action=url.here.child(SUBMIT), method="post", enctype="multipart/form-data")
+                    
     def render_logout(self, ctx, data):
         return ctx.tag(href=guard.LOGOUT_AVATAR)
 

@@ -11,6 +11,26 @@
 <body>
 <h1><span n:render="loginname">Welcome to OPC</span></h1>
 <br />
+
+<h2>Status</h2>
+<hr />
+<p id="status" n:render="status">...</p>
+
+<h2>Runs</h2>
+<hr/>
+<p id="runs">...</p>
+
+<h2>Messages</h2>
+<hr />
+<p id="info">...</p>
+
+<!-- Submit Problem Form -->
+<h2>Submit</h2>
+<form n:render="submitProblemForm">
+	<input type="file" name="source" /> <br />
+	<button type="submit">Upload Program</button>
+</form>
+
 <hr />
 <a n:render="logout">Logout</a>
 </body>

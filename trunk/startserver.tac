@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env twistd -noy
 # Copyright (C) 2004 Sridhar .R <sridhar@users.berlios.de>.
 #
 # This program is free software; you can redistribute it and/or
