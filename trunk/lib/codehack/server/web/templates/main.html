@@ -8,30 +8,35 @@
 <title>Welcome</title>
 <span n:render="glue"></span>
 </head>
+
 <body>
-<h1><span n:render="loginname">Welcome to OPC</span></h1>
-<br />
 
-<h2>Status</h2>
-<hr />
-<p id="status" n:render="status">...</p>
+  <h1><span n:render="loginname">Welcome to OPC</span></h1>
+  <br />
 
-<h2>Runs</h2>
-<hr/>
-<p id="runs">...</p>
+  <h2>Status</h2>
+  <hr />
+  <strong>Contest:</strong> <em n:render="name"></em> <br />
+  <strong>Age:</strong> <em n:render="age"></em> <br />
+  <strong>Duration:</strong> <em n:render="duration"></em> <br />
 
-<h2>Messages</h2>
-<hr />
-<p id="info">...</p>
+  <h2>Runs</h2>
+  <hr/>
+  <p id="runs">...</p>
 
-<!-- Submit Problem Form -->
-<h2>Submit</h2>
-<form n:render="submitProblemForm">
+  <h2>Messages</h2>
+  <hr />
+  <p id="info">...</p>
+
+  <!-- Submit Problem Form -->
+  <h2>Submit</h2>
+  <form n:render="submitProblemForm">
 	<input type="file" name="source" /> <br />
 	<button type="submit">Upload Program</button>
-</form>
+  </form>
 
-<hr />
-<a n:render="logout">Logout</a>
+  <hr />
+  <a n:render="logout"><b>Logout</b></a>
+
 </body>
 </html>

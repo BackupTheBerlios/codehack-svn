@@ -41,9 +41,10 @@ class DefaultMindAdaptor(object):
     
     "Adapts mind of twisted.spread client"
     
-    def __init__(self, mind):
+    def __init__(self, mind, avatar):
         self.mind = mind
-        
+        self.avatar = avatar
+
     def __getattr__(self, attr):
         def proxy(*args, **kwargs):
             self.mind.callRemote(attr, *args, **kwargs)
@@ -69,7 +70,7 @@ class Realm(auth.CodehackRealm):
         return self.interface, self.liveavatars.get(avatarId), remove_f
 
 def getApplication(contest, port, backlog=500, backlog_web=500):
-    """"Return application that must be run
+    """Return application that must be run
     .tac file calls this function"""
     app = service.Application('codehack')
     
@@ -82,8 +83,8 @@ def getApplication(contest, port, backlog=500, backlog_web=500):
     coreservice.setServiceParent(app)
     
     # The Web service (nevow)
-    from web import test
-    realm = test.WebRealm(contest)
+    from web import base
+    realm = base.WebRealm(contest)
     myChecker = auth.CodehackChecker(contest.dbproxy)
     portal_ = portal.Portal(realm)
     portal_.registerChecker(myChecker)

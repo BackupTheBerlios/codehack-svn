@@ -63,7 +63,7 @@ class CodehackRealm:
         emailid = uid['emailid']
         id1 = uid['id']
         userid = uid['userid']
-        
+
         typ_map = {
             db.USER_TEAM: team.TeamAvatar,
             db.USER_JUDGE: None, #judge.JudgeAvatar,
@@ -73,11 +73,15 @@ class CodehackRealm:
             avatar_factory = typ_map[typ]
         except KeyError:
             raise RuntimeError, 'Invalid type returned by database'
-            
-        mind = self.mind_adaptor[typ](mind)
+
+        # Create the avatar and mind
+        # It is *guaranteed* the Mind will be created after Avatar
         avatar = avatar_factory(mind, self.contest, 
                                 int(time.time()), id1, userid, emailid)
-        mind.avatar = avatar
+        mind = self.mind_adaptor[typ](mind, avatar)
+        avatar.ready(mind)
+
+        # Add to liveavatars registry
         self.liveavatars.add(avatarId, avatar)
         remove_f = lambda : self.liveavatars.remove(avatarId)
         return self.requestThisAvatar(avatarId, mind, remove_f)

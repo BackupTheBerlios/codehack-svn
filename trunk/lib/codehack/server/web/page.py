@@ -37,83 +37,7 @@ from codehack.server import auth
 from codehack.server import db
 
 
-class NevowTeamMind(object):
-    
-    def __init__(self, mind):
-        self.mind  = mind
-        
-    def info(self, msg):
-        """Message from server"""
-        self.mind.set('info', msg)
-
-    def submissionResult(self, result):
-        d = self.avatar.perspective_getSubmissions()
-        def _cbGot(submissions):
-            s = ''
-            for run in submissions:
-                ts, pr, lang, res = run
-                s = s + '%d Seconds, Problem %d, Lang %s, Result %d -- ' % (ts, pr, lang, res)
-            self.mind.set('runs', T.b[s])
-        return d.addCallback(_cbGot)
-
-    def contestStopped(self):
-        self.mind.sendScript('alert("Stopped");')
-        # self.gui.contestStopped()
-
-    def contestStarted(self, name, details):
-        s = str(dir(self.mind))
-        self.mind.sendScript('alert("Started");')
-        self.info(T.i[s])
-        # self.gui.contestStarted(name, details)
-
-
-class NevowAdminMind(object):
-    
-    def __init__(self, mind):
-        self.mind = mind
-        
-    def info(self, msg):
-        """Message from server"""
-        pass
-
-    def liveClients(self, clients):
-        self.mind.sendScript('alert("liveClients");')
-        # self.gui.gotLoggedClients(clients)
-
-    def contestStopped(self):
-        pass
-        # self.gui.contestStopped()
-
-    def contestStarted(self):
-        pass
-        # self.gui.contestStarted()
-        
-
-class WebRealm(auth.CodehackRealm):
-    """A simple implementor of cred's IRealm.
-       For web, this gives us the LoggedIn page.
-    """
-    __implements__ = portal.IRealm
-    interface = inevow.IResource
-    
-    mind_adaptor = {
-        db.USER_TEAM: NevowTeamMind,
-        db.USER_ADMIN: NevowAdminMind,
-        db.USER_JUDGE: None
-    }
-    
-    def requestAnonymousAvatar(self, mind):
-        return self.interface, LoginPage(), lambda: None
-    
-    def requestThisAvatar(self, avatarId, mind, remove_f):
-        resc = MainPage(self.liveavatars.get(avatarId), mind)
-        # mind.avatar = resc
-        def logout():
-            resc.logout()
-            remove_f()
-        return self.interface, resc, logout
-
-        
+      
 def web_file(fil):
     return join(paths.WEB_DIR, fil)
 
@@ -137,9 +61,9 @@ class MainPage(rend.Page):
     addSlash = True
     docFactory = loaders.xmlfile(web_file('main.html'))
 
-    def __init__(self, avatar, mind):
-        self.avatar = avatar
+    def __init__(self,mind):
         self.mind = mind
+        self.avatar = mind.avatar
 
     def locateChild(self, ctx, segments):
  
@@ -154,6 +78,18 @@ class MainPage(rend.Page):
 
     def render_loginname(self, ctx, data):
         return self.avatar.userid
+
+    # Meta Info
+    #
+    
+    def render_name(self, ctx, data):
+        return self.mind.name
+
+    def render_age(self, ctx, data):
+        return self.mind.age
+
+    def render_duration(self, ctx, data):
+        return self.mind.duration
         
     def render_status(self, ctx, data):
         i = self.avatar.perspective_getInformation()

@@ -45,7 +45,7 @@ class AdminAvatar(pb.Avatar):
         @param emailid: emailid of the user
         """
         log.debug('AdminAvatar created - %s' % id)
-        self.mind = mind
+        self.mind = None # see self.ready()
         self.id = id
         self.userid = userid
         self.emailid = emailid
@@ -54,6 +54,14 @@ class AdminAvatar(pb.Avatar):
         self.loginat = loginat
         self.whoami = 'admin'
 
+    def ready(self, mind):
+        """Called when avatar is ready for operation.  Untill this
+        avatar should wait for anything.
+
+        This method is guaranteed to be called *immediately* after
+        creating the Avatar object"""
+        self.mind = mind
+            
     def connectionAge(self):
         "Return the duration in seconds when avatar is logged in"
         return int(time.time()-self.loginat)

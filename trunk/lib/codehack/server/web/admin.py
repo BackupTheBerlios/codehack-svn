@@ -1,5 +1,4 @@
-#!/usr/bin/twistd 
-# Copyright (C) 2004 Sridhar .R <sridhar@users.berlios.de>.
+# Copyright (C) 2004 Sridhar .R <sridhar@users.berlios.de>
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -15,20 +14,30 @@
 # along with this program; if not, write to the Free Software 
 # Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-"""Twisted Server .TAC file"""
+"""
+Admin Web Mind
+"""
 
-import setpath
-import profile
 
-from twisted.internet import reactor
-from codehack.server import gateway
-from codehack.server import contest
+class NevowAdminMind(object):
+    
+    def __init__(self, mind, avatar):
+        self.mind = mind
+        self.avatar = avatar
+        
+    def info(self, msg):
+        """Message from server"""
+        pass
 
-pro = profile.getProfileObject()
+    def liveClients(self, clients):
+        self.mind.sendScript('alert("liveClients");')
+        # self.gui.gotLoggedClients(clients)
 
-cnt = contest.Contest(profile.contest_name, profile.TEST_DIR)
-cnt.open()
-reactor.callLater(0,cnt.startServer, pro)
+    def contestStopped(self):
+        pass
+        # self.gui.contestStopped()
 
-application = gateway.getApplication(cnt, 8800)
-	
+    def contestStarted(self):
+        pass
+        # self.gui.contestStarted()
+        

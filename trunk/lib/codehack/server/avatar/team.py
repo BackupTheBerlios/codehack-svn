@@ -41,7 +41,7 @@ class TeamAvatar(pb.Avatar):
         @param emailid: emailid of the user
         """
         log.debug('TeamAvatar created - %s' % id)
-        self.mind = mind
+        self.mind = None # see self.ready()
         self.whoami = 'team'
         self.id = id
         self.loginat = loginat
@@ -55,7 +55,15 @@ class TeamAvatar(pb.Avatar):
         self.contest_started = False
         self._last_submitted_ts = -1  # Timestamp of last submitted problem
                                       # Used to avoid duplicate timestamps
-        if contest.isrunning():
+
+    def ready(self, mind):
+        """Called when avatar is ready for operation.  Untill this
+        avatar should wait for anything.
+
+        This method is guaranteed to be called *immediately* after
+        creating the Avatar object"""
+        self.mind = mind
+        if self.contest.isrunning():
             self.contestStarted()
 
     def connectionAge(self):
