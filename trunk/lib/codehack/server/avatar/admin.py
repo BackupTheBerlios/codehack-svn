@@ -79,13 +79,14 @@ class AdminAvatar(pb.Avatar):
     # Contest information
 
     def perspective_get_contest_info(self):
-        """Returns duration, contestage tuple.
+        """Returns name, duration, contestage tuple.
 
         Contest is not running of duration is None"""
         duration = self.contest.duration
+        name = self.contest.name
         if duration:
-            return duration, self.contest.get_contest_age()
-        return None, None
+            return name, duration, self.contest.get_contest_age()
+        return name, None, None
     
     # GET ALL - Get list of rows
     #
