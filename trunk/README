@@ -1,4 +1,4 @@
-DEVELOPMENT IS STOPPED - CONTACT sridharinfinity (at) gmail.com if you wish to take over the maintainence
+DEVELOPMENT IS STOPPED - CONTACT nearfar@users.berlios.de if you wish to take over the maintainence
  
 Introduction
 ------------
@@ -20,4 +20,4 @@ Development
 Asynchronous networking framework (Twisted) is used, which means no overhead
 of threads.  See HACKING for further information.
 
-- R. Sridhar (sridhar@users.berlios.de)
+- R. Sridhar (nearfar@users.berlios.de)
